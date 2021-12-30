@@ -8,7 +8,7 @@ import numpy as np
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
 
 path = os.path.dirname(__file__)
-print(path)
+
 model = tf.keras.models.load_model(path + '/my_model.h5')
 
 # Re-evaluate the model
