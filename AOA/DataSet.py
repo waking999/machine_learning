@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 
 
 class DataSet:
@@ -8,7 +9,7 @@ class DataSet:
         return
 
     @staticmethod
-    def write_dataset(file_path, df, sep_char,header):
+    def write_dataset(file_path, df, sep_char, header):
         df.to_csv(file_path, index=False, sep=sep_char, header=header)
 
     '''
@@ -54,3 +55,10 @@ class DataSet:
             _rtnArray.append(data_array[_slice])
 
         return np.concatenate(_rtnArray)
+
+    @staticmethod
+    def load_individual_data(base_file_name, array_name, index):
+        _local_dir = os.path.dirname(__file__)
+        input_file_path = _local_dir + '/input/' + base_file_name + '_' + array_name + str(index) + '.csv'
+        df = DataSet.load_dataset(file_path=input_file_path, sep_char=',', header=None)
+        return df[0]

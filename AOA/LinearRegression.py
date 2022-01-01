@@ -1,9 +1,14 @@
 import numpy as np
-
+import math
 
 class LinearRegression:
     def __init__(self):
         return
+
+    @staticmethod
+    def origin_function(x):
+        # return 200*(1+(2*math.sin(math.pi*math.sin(x)/-2)))
+        return x
 
     @staticmethod
     def compute_error_for_line_given_points(xs, ys, w, b):
@@ -12,7 +17,7 @@ class LinearRegression:
         for i in range(len_xs):
             x = xs[i]
             y = ys[i]
-            total_error += (y - (w * x + b)) ** 2
+            total_error += (y - (w * LinearRegression.origin_function(x) + b)) ** 2
 
         return total_error / float(len_xs)
 
@@ -24,8 +29,8 @@ class LinearRegression:
         for i in range(len_xs):
             x = xs[i]
             y = ys[i]
-            b_gradient += ((w_current * x + b_current) - y)
-            w_gradient += x * ((w_current * x + b_current) - y)
+            b_gradient += ((w_current * LinearRegression.origin_function(x) + b_current) - y)
+            w_gradient += x * ((w_current * LinearRegression.origin_function(x) + b_current) - y)
 
         new_w = w_current - (learning_rate * w_gradient * (2 / float(len_xs)))
         new_b = b_current - (learning_rate * b_gradient * (2 / float(len_xs)))
@@ -40,7 +45,7 @@ class LinearRegression:
         error_before = LinearRegression.compute_error_for_line_given_points(xs=xs, ys=ys, w=w_start, b=b_start)
         i = 0
         error_after = error_before
-        while np.absolute(error_before - error_after) / error_before < 1 - eps:
+        while ((error_before - error_after) / error_before) < (1 - eps):
             w, b = LinearRegression.step_gradient(xs=xs, ys=ys, w_current=w, b_current=b, learning_rate=learning_rate)
             error_after = LinearRegression.compute_error_for_line_given_points(xs=xs, ys=ys, w=w, b=b)
             print("After {0} iterations w = {1}, b = {2}, error = {3}".
@@ -73,6 +78,6 @@ class LinearRegression:
     def predict(xs, w, b):
         y_pred = []
         for x in xs:
-            tmp_y = w * x + b
+            tmp_y = w * LinearRegression.origin_function(x) + b
             y_pred.append(tmp_y)
         return y_pred

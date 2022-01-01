@@ -28,8 +28,8 @@ class Process:
 
         _local_dir = os.path.dirname(__file__)
         output_file_path = _local_dir + '/output/' + base_file_name + '_' + 'wb' + '.csv'
-        np.savetxt(output_file_path, wb_array, delimiter=',', fmt='%.' + Util.get_decimal_length(wb_array[0]) + 'f')
+        np.savetxt(output_file_path, wb_array, delimiter=',', fmt='%.' + str(Util.get_decimal_length(wb_array[0])) + 'f')
 
 
 if __name__ == '__main__':
-    Process.process(base_file_name='E0a.txt_shuffle.csv', index=0, learning_rate=0.00001, eps=0.01)
+    Process.process(base_file_name='E0a.txt_shuffle.csv', index=0, learning_rate=0.00001, eps=0.007)
