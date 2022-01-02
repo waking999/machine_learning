@@ -3,7 +3,7 @@ import os
 from Constants import Constants
 import numpy as np
 # from scipy.interpolate import interp1d
-# from scipy.interpolate import make_interp_spline
+from scipy.interpolate import make_interp_spline
 
 
 class Plot:
