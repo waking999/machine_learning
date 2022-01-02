@@ -52,8 +52,8 @@ class PreProces:
         df = DataSet.load_dataset(file_path=input_file_path, sep_char=',', header=None)
 
         # split data into slices
-        x = df[0]
-        y = df[1]
+        x = df[0].values
+        y = df[1].values
         num_slice = 5
         x_slices = DataSet.slice_array(x, num_slice=num_slice)
         y_slices = DataSet.slice_array(y, num_slice=num_slice)
