@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+from Constants import Constants
 
 
 class DataSet:
@@ -59,6 +60,7 @@ class DataSet:
     @staticmethod
     def load_individual_data(base_file_name, array_name, index):
         _local_dir = os.path.dirname(__file__)
-        input_file_path = _local_dir + '/input/' + base_file_name + '_' + array_name + str(index) + '.csv'
+        input_file_path = _local_dir + '/' + Constants.DIRECTORY_WORK + '/' + base_file_name + '_' + array_name + str(
+            index) + '.csv'
         df = DataSet.load_dataset(file_path=input_file_path, sep_char=',', header=None)
         return df[0]

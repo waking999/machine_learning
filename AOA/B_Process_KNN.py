@@ -1,7 +1,10 @@
 from sklearn.neighbors import KNeighborsRegressor
 from DataSet import DataSet
 from Util import Util
+from Constants import Constants
 from Plot import Plot
+import pickle
+import os
 
 
 class Process:
@@ -26,16 +29,21 @@ class Process:
                                                index=self.index)
         train_y = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='train_y',
                                                index=self.index)
-        val_x = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='val_x',
-                                             index=self.index)
-        val_y = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='val_y',
-                                             index=self.index)
+        # val_x = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='val_x',
+        #                                      index=self.index)
+        # val_y = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='val_y',
+        #                                      index=self.index)
 
         neigh = Process.fit(train_x=train_x, train_y=train_y)
-        pred_y = self.predict(neigh)
-
-        Plot.plot(train_x=train_x, train_y=train_y, val_x=val_x, val_y=val_y,
-                  pred_y=pred_y)
+        _local_dir = os.path.dirname(__file__)
+        output_file_path = _local_dir + '/' + Constants.DIRECTORY_MODEL + '/' + self.base_file_name + '_' + str(
+            self.index) + '_knn'
+        knn_pickle = open(output_file_path, 'wb')
+        pickle.dump(neigh, knn_pickle)
+        # pred_y = self.predict(neigh)
+        #
+        # Plot.plot(train_x=train_x, train_y=train_y, val_x=val_x, val_y=val_y,
+        #           pred_y=pred_y)
 
 
 if __name__ == '__main__':
