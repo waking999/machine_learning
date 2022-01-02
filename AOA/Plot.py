@@ -2,8 +2,10 @@ import matplotlib.pyplot as plt
 import os
 from Constants import Constants
 import numpy as np
-# from scipy.interpolate import interp1d
-from scipy.interpolate import make_interp_spline
+from scipy.interpolate import interp1d
+
+
+# from scipy.interpolate import make_interp_spline
 
 
 class Plot:
@@ -31,10 +33,10 @@ class Plot:
         Plot.plot(train_x=train_x, train_y=train_y, val_x=val_x, val_y=val_y,
                   pred_val_y=pred_val_y)
 
-        # x_y_cubic = interp1d(curve_x, curve_y, kind='cubic')
-        # _x1 = np.linspace(min(curve_x), max(curve_x), 500)
-        # _y1 = x_y_cubic(_x1)
-        # plt.plot(_x1, _y1)
+        x_y_cubic = interp1d(curve_x, curve_y, kind='cubic')
+        _x1 = np.linspace(min(curve_x), max(curve_x), curve_step)
+        _y1 = x_y_cubic(_x1)
+        plt.plot(_x1, _y1)
 
         # x_y_spline = make_interp_spline(curve_x, curve_y)
         # _x2 = np.linspace(min(curve_x), max(curve_x), curve_step)
