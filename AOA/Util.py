@@ -16,3 +16,17 @@ class Util:
             rtn_array.append([item])
 
         return rtn_array
+
+    @staticmethod
+    def generate_curve_array_2d(array, step):
+        rtn_array = []
+        array_min = min(array)
+        array_max = max(array)
+        array_diff = array_max - array_min
+        array_diff_inc = array_diff / step
+        rtn_array.append(array_min)
+
+        for i in range(1, step):
+            rtn_array.append(rtn_array[i - 1] + array_diff_inc)
+
+        return rtn_array

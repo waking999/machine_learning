@@ -11,6 +11,7 @@ class Predict:
         self.base_file_name = base_file_name
         self.index = index
         self.model_name = model_name
+        self.curve_step = 10000
 
     def predict(self, xs):
         _local_dir = os.path.dirname(__file__)
@@ -34,7 +35,7 @@ class Predict:
                                              index=self.index)
 
         xs = train_x.append(val_x)
-        curve_x = xs.sort_values()
+        curve_x = Util.generate_curve_array_2d(xs.sort_values(), self.curve_step)
         curve_y = self.predict(curve_x)
         return [curve_x, curve_y]
 
@@ -50,11 +51,7 @@ class Predict:
         val_y = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='val_y',
                                              index=self.index)
 
-        Plot.plot_knn(train_x=train_x, train_y=train_y, val_x=val_x, val_y=val_y,
-                      pred_val_y=pred_val_y, curve_x=curve_x, curve_y=curve_y,
+        Plot.plot_nlr(train_x=train_x, train_y=train_y, val_x=val_x, val_y=val_y,
+                      pred_val_y=pred_val_y, curve_x=curve_x, curve_y=curve_y, curve_step=self.curve_step,
                       base_file_name=self.base_file_name, image_name=self.model_name + '.png'
                       )
-
-# if __name__ == '__main__':
-#     predict = Predict(base_file_name='E0a.txt_shuffle.csv', index=0)
-#     predict.valuation()

@@ -22,12 +22,20 @@ optimizer = optimizers.SGD(learning_rate=0.001)
 
 
 def train_epoch(epoch):
-    for step, (x, y) in enumerate(db):
+    for step, (_x, _y) in enumerate(train_dataset):
         with tf.GradientTape() as tape:
-            x = tf.reshape(x, (-1, 28 * 28))
-            out = model(x)
-            loss = tf.reduce_sum(tf.square(out - y)) / x.shape[0]
+            _x = tf.reshape(_x, (-1, 28 * 28))
+            out = model(_x)
+            loss = tf.reduce_sum(tf.square(out - _y)) / _x.shape[0]
         grads = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(grads, model.trainable_variables))
         if step % 100 == 0:
             print(epoch, step, loss.numpy())
+
+
+def train():
+    for epoch in range(30):
+        train_epoch(epoch)
+
+    if __name__ == '__main__':
+        train()

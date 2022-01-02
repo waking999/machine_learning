@@ -13,7 +13,7 @@ class Process:
 
     @staticmethod
     def fit(train_x, train_y):
-        model = SVR(C=10.0, cache_size=200,  degree=30, epsilon=0.01,
+        model = SVR(C=10.0, cache_size=200,  degree=100, epsilon=0.001,
                     gamma=0.1, kernel='rbf',
                     max_iter=-1, shrinking=True, tol=0.001, verbose=False)
         model.fit(Util.convert_1d_array_to_2d(train_x), train_y)
