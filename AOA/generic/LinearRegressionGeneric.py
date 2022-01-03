@@ -1,13 +1,14 @@
 from AOA.util.Constants import Constants
 from AOA.util.Util import Util
+from AOA.util.DataSet import DataSet
+
 import os
 import numpy as np
 
 
 class LinearRegression:
-    def __init__(self, base_file_name, dataset_index, wb_file_suffix):
+    def __init__(self, base_file_name, wb_file_suffix):
         self.base_file_name = base_file_name
-        self.dataset_index = dataset_index
         self.wb_file_suffix = wb_file_suffix
         return
 
@@ -40,12 +41,21 @@ class LinearRegression:
         return [new_w, new_b]
 
     def gradient_descent_runner(self, xs, ys, w_start, b_start, learning_rate, eps):
-        b = b_start
-        w = w_start
+        _local_dir = os.path.dirname(__file__)
+        input_file_path_wb = _local_dir + '/../' + Constants.DIRECTORY_WORK + '/' + self.base_file_name + '_' + self.wb_file_suffix
+        df_wb = DataSet.load_dataset(file_path=input_file_path_wb, sep_char=',', header=None)
+        w = df_wb[0][0]
+        b = df_wb[0][1]
 
-        error_before = self.compute_error_for_line_given_points(xs=xs, ys=ys, w=w_start, b=b_start)
+        if w is None:
+            w = w_start
+
+        if b is None:
+            b = b_start
+
+        error_before = self.compute_error_for_line_given_points(xs=xs, ys=ys, w=w, b=b)
         print("Before Linear Regression at w = {0}, b = {1}, error = {2}"
-              .format(w_start, b_start, error_before)
+              .format(w, b, error_before)
               )
 
         print("Running...")
