@@ -2,9 +2,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from DataSet import DataSet
-from Util import Util
-from Constants import Constants
+from AOA.util.DataSet import DataSet
+from AOA.util.Util import Util
+from AOA.util.Constants import Constants
 
 
 class PreProces:

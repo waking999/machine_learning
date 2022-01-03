@@ -2,8 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from DataSet import DataSet as ds
-from LinearRegression import LinearRegression
+from AOA.util.DataSet import DataSet as ds
+from LinearRegressionX import LinearRegression
 
 
 def run():

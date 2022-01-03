@@ -1,5 +1,5 @@
 from sklearn.svm import SVR
-from B_Process_Generic import Process
+from AOA.generic.B_Process_Generic import Process
 
 
 class ProcessSVR(Process):

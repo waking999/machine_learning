@@ -1,5 +1,5 @@
 import xgboost as xgb
-from B_Process_Generic import Process
+from AOA.generic.B_Process_Generic import Process
 
 
 class ProcessXGB(Process):

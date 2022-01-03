@@ -1,5 +1,5 @@
 from sklearn.ensemble import GradientBoostingRegressor
-from B_Process_Generic import Process
+from AOA.generic.B_Process_Generic import Process
 
 
 class ProcessGBDT(Process):

@@ -1,5 +1,5 @@
 from sklearn.neural_network import MLPRegressor
-from B_Process_Generic import Process
+from AOA.generic.B_Process_Generic import Process
 
 
 class ProcessMLP(Process):
