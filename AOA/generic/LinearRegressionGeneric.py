@@ -1,5 +1,14 @@
+from AOA.util.Constants import Constants
+from AOA.util.Util import Util
+import os
+import numpy as np
+
+
 class LinearRegression:
-    def __init__(self):
+    def __init__(self, base_file_name, dataset_index, wb_file_suffix):
+        self.base_file_name = base_file_name
+        self.dataset_index = dataset_index
+        self.wb_file_suffix = wb_file_suffix
         return
 
     def origin_function(self, x):
@@ -18,7 +27,6 @@ class LinearRegression:
     def step_gradient(self, xs, ys, w_current, b_current, learning_rate):
         b_gradient = 0
         w_gradient = 0
-        c_gradient = 1
         len_xs = len(xs)
         for i in range(len_xs):
             x = xs[i]
@@ -45,12 +53,19 @@ class LinearRegression:
         error_after = error_before
         error_diff_rate = ((error_before - error_after) / error_before)
         while error_diff_rate < (1 - eps):
-            w, b = self.step_gradient(xs=xs, ys=ys, w_current=w, b_current=b, learning_rate=learning_rate)
+            wb_array = self.step_gradient(xs=xs, ys=ys, w_current=w, b_current=b, learning_rate=learning_rate)
+            w = wb_array[0]
+            b = wb_array[1]
             error_after = self.compute_error_for_line_given_points(xs=xs, ys=ys, w=w, b=b)
             error_diff_rate = ((error_before - error_after) / error_before)
             print("After {0} iterations w = {1}, b = {2}, error = {3}, real_time_eps={4}".
                   format(i, w, b, error_after, (1 - error_diff_rate))
                   )
+            if error_after < error_before:
+                _local_dir = os.path.dirname(__file__)
+                output_file_path = _local_dir + '/../' + Constants.DIRECTORY_WORK + '/' + self.base_file_name + '_' + self.wb_file_suffix
+                np.savetxt(output_file_path, wb_array, delimiter=',',
+                           fmt='%.' + str(Util.get_decimal_length(wb_array[0])) + 'f')
             i += 1
 
         return [w, b]
