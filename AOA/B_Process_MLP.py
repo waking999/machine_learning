@@ -3,8 +3,8 @@ from AOA.generic.B_Process_Generic import Process
 
 
 class ProcessMLP(Process):
-    def __init__(self, base_file_name, index, model_name):
-        super().__init__(base_file_name, index, model_name)
+    def __init__(self, base_file_name, dataset_index, model_name):
+        super().__init__(base_file_name, dataset_index, model_name)
         self.model = MLPRegressor(activation='relu', alpha=0.0001, batch_size='auto',
                                   learning_rate='constant',
                                   learning_rate_init=0.0001, power_t=0.5,
@@ -17,5 +17,5 @@ class ProcessMLP(Process):
 
 
 if __name__ == '__main__':
-    process = ProcessMLP(base_file_name='E0a.txt_shuffle.csv', index=0, model_name='mlp')
+    process = ProcessMLP(base_file_name='E0a.txt_shuffle.csv', dataset_index=0, model_name='mlp')
     process.process()
