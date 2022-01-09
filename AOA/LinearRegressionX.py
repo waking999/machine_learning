@@ -6,6 +6,5 @@ class LinearRegressionX(LinearRegression):
         super().__init__(base_file_name=base_file_name, wb_file_suffix=wb_file_suffix)
         return
 
-    @staticmethod
     def origin_function(x):
         return x
