@@ -28,7 +28,6 @@ class LinearRegression:
     def compute_error_for_line_given_points(self, xs, ys, theta):
         total_error = 0
         len_xs = len(xs)
-        len_theta = len(theta)
 
         for i in range(len_xs):
             x = xs[i]
@@ -87,7 +86,7 @@ class LinearRegression:
             error_after = self.compute_error_for_line_given_points(xs=xs, ys=ys, theta=theta)
             error_diff_rate = ((error_before - error_after) / error_before)
             print(theta)
-            print("error = {0}, real_time_eps={1}".format(error_before, (1 - error_diff_rate)))
+            print("error = {0}, real_time_eps={1}".format(error_after, (1 - error_diff_rate)))
 
             if error_after < error_before:
                 _local_dir = os.path.dirname(__file__)
@@ -104,11 +103,10 @@ class LinearRegression:
                                              eps=eps)
         return theta
 
+    def predict(self, xs, theta):
+        y_pred = []
 
-def predict(self, xs, theta):
-    y_pred = []
-    len_theta = len(theta)
-    for x in xs:
-        tmp_y = self.cal_multi_variables(len_theta=len_theta, theta=theta, x=x)
-        y_pred.append(tmp_y)
-    return y_pred
+        for x in xs:
+            tmp_y = self.cal_multi_variables(theta=theta, x=x)
+            y_pred.append(tmp_y)
+        return y_pred
