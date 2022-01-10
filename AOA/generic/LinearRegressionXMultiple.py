@@ -1,31 +1,30 @@
-from AOA.util.Constants import Constants
-from AOA.util.Util import Util
-from AOA.util.DataSet import DataSet
-
-import os
 import numpy as np
+import os
+from AOA.util.Constants import Constants
+from AOA.util.DataSet import DataSet
+from AOA.util.Util import Util
+
+'''
+Linear Regression for y=w0+w1*x+w2*x^2+...+wn*x^n
+'''
 
 
-class LinearRegression:
-
+class LinearRegressionXMultiple:
     def __init__(self, base_file_name, theta_file_suffix, num_of_variables):
         self.base_file_name = base_file_name
         self.theta_file_suffix = theta_file_suffix
         self.num_of_variables = num_of_variables
         return
 
-    def origin_function(self, x):
-        return x
-
-    def cal_multi_variables(self, theta, x):
+    def __cal_multi_variables(self, theta, x):
         tmp_y = 0
         tmp_x = 1
         for j in range(self.num_of_variables):
-            tmp_y += theta[j] * tmp_x
-            tmp_x *= tmp_x * self.origin_function(x)
+            tmp_y += float(theta[j]) * tmp_x
+            tmp_x *= tmp_x * x
         return tmp_y
 
-    def compute_error_for_line_given_points(self, xs, ys, theta):
+    def __compute_error_for_line_given_points(self, xs, ys, theta):
         total_error = 0
         len_xs = len(xs)
 
@@ -33,12 +32,12 @@ class LinearRegression:
             x = xs[i]
             y = ys[i]
 
-            tmp_y = self.cal_multi_variables(theta=theta, x=x)
+            tmp_y = self.__cal_multi_variables(theta=theta, x=x)
             total_error += (y - tmp_y) ** 2
 
         return total_error / float(len_xs)
 
-    def step_gradient(self, xs, ys, theta_current, learning_rate):
+    def __step_gradient(self, xs, ys, theta_current, learning_rate):
 
         theta_gradient = np.zeros(self.num_of_variables)
 
@@ -49,8 +48,8 @@ class LinearRegression:
 
             tmp_y = 1
             for j in range(self.num_of_variables):
-                theta_gradient[j] += ((self.cal_multi_variables(theta=theta_current, x=x) - y) * tmp_y)
-                tmp_y *= self.origin_function(x)
+                theta_gradient[j] += ((self.__cal_multi_variables(theta=theta_current, x=x) - y) * tmp_y)
+                tmp_y *= x
 
         theta_new = np.zeros(self.num_of_variables)
 
@@ -70,10 +69,16 @@ class LinearRegression:
             for i in range(self.num_of_variables):
                 if theta[i] is None:
                     theta[i] = theta_start
+
         except FileNotFoundError:
             theta = theta_start
 
-        error_before = self.compute_error_for_line_given_points(xs=xs, ys=ys, theta=theta)
+        try:
+            error_before = theta[self.num_of_variables]
+            error_before = max(error_before, self.__compute_error_for_line_given_points(xs=xs, ys=ys, theta=theta))
+        except KeyError:
+            error_before = self.__compute_error_for_line_given_points(xs=xs, ys=ys, theta=theta)
+
         print(theta)
         print("error = {0}".format(error_before))
 
@@ -82,13 +87,14 @@ class LinearRegression:
         error_after = error_before
         error_diff_rate = ((error_before - error_after) / error_before)
         while error_diff_rate < (1 - eps):
-            theta = self.step_gradient(xs=xs, ys=ys, theta_current=theta, learning_rate=learning_rate)
-            error_after = self.compute_error_for_line_given_points(xs=xs, ys=ys, theta=theta)
+            theta = self.__step_gradient(xs=xs, ys=ys, theta_current=theta, learning_rate=learning_rate)
+            error_after = self.__compute_error_for_line_given_points(xs=xs, ys=ys, theta=theta)
             error_diff_rate = ((error_before - error_after) / error_before)
             print(theta)
             print("error = {0}, real_time_eps={1}".format(error_after, (1 - error_diff_rate)))
 
             if error_after < error_before:
+                theta = np.append(arr=theta, values=[error_before])
                 _local_dir = os.path.dirname(__file__)
                 output_file_path = _local_dir + '/../' + Constants.DIRECTORY_WORK + '/' + self.base_file_name + '_' + str(
                     self.num_of_variables) + '_' + self.theta_file_suffix
@@ -99,14 +105,13 @@ class LinearRegression:
         return theta
 
     def get_theta_by_sgd(self, xs, ys, learning_rate, theta_start, eps):
-        theta = self.gradient_descent_runner(xs=xs, ys=ys, theta_start=theta_start, learning_rate=learning_rate,
-                                             eps=eps)
-        return theta
+        return self.gradient_descent_runner(xs=xs, ys=ys, theta_start=theta_start, learning_rate=learning_rate,
+                                            eps=eps)
 
     def predict(self, xs, theta):
         y_pred = []
 
         for x in xs:
-            tmp_y = self.cal_multi_variables(theta=theta, x=x)
+            tmp_y = self.__cal_multi_variables(theta=theta, x=x)
             y_pred.append(tmp_y)
         return y_pred

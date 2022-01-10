@@ -1,5 +1,5 @@
-from LinearRegressionX import LinearRegressionX
-from AOA.generic.B_Process_LR_Generic import Process
+from AOA.ToBeRemoved.LinearRegressionX import LinearRegressionX
+from AOA.ToBeRemoved.B_Process_LR_Generic import Process
 
 if __name__ == '__main__':
     linear_regression_instance = LinearRegressionX(base_file_name='E0a.txt_shuffle.csv',

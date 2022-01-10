@@ -1,5 +1,5 @@
-from LinearRegressionXMultiple import LinearRegressionX
-from AOA.generic.C_Predict_LR_Generic_Multiple import PredictLR
+from AOA.generic.LinearRegressionXMultiple import LinearRegressionX
+from AOA.generic.C_Predict_LinearRegressionXMultiple import PredictLR
 
 if __name__ == '__main__':
     base_file_name = 'E0a.txt_shuffle.csv'
