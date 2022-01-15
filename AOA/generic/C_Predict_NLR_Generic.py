@@ -22,9 +22,9 @@ class PredictNLR(Predict):
         return ys
 
     def valuation(self):
-        train_x, train_y, val_x, val_y, pred_val_y, curve_x, curve_y = self.prepare_valuation()
+        train_x, train_y, val_x, val_y, pred_val_y  = self.prepare_valuation()
 
         Plot.plot(train_x=train_x, train_y=train_y, val_x=val_x, val_y=val_y,
-                      pred_val_y=pred_val_y, curve_x=curve_x, curve_y=curve_y, curve_step=self.curve_step,
+                      pred_val_y=pred_val_y, curve_x=train_x, curve_y=self.predict(train_x), curve_step=self.curve_step,
                       base_file_name=self.base_file_name, image_name=self.model_name + '.png'
                       )
