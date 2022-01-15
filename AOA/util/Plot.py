@@ -14,7 +14,7 @@ class Plot:
         Plot.plot_train_val(train_x=train_x, train_y=train_y, val_x=val_x, val_y=val_y,
                             pred_val_y=pred_val_y)
 
-        plt.plot(curve_x, curve_y, c='r')
+        plt.plot(curve_x, curve_y, c='b')
 
         # x_y_cubic = interp1d(curve_x, curve_y, kind='cubic')
         # _x1 = np.linspace(min(curve_x), max(curve_x), curve_step)
