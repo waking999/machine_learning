@@ -37,7 +37,7 @@ class PredictNLR:
         val_y = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='val_y',
                                              dataset_index=self.dataset_index)
 
-        val_x = val_x[:, np.newaxis]
+        val_x = np.expand_dims(val_x.to_numpy(), axis=1)
         pred_val_y = self.model.predict(self.ploy_reg.fit_transform(val_x))
 
         return [train_x, train_y, val_x, val_y, pred_val_y]
@@ -46,7 +46,7 @@ class PredictNLR:
         train_x, train_y, val_x, val_y, pred_val_y = self.prepare_valuation()
 
         train_x = train_x.sort_values()
-        train_x = train_x[:, np.newaxis]
+        train_x = np.expand_dims(train_x.to_numpy(), axis=1)
         curve_x = self.ploy_reg.fit_transform(train_x)
         curve_y = self.model.predict(curve_x)
 

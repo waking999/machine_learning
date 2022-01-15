@@ -1,6 +1,5 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-from AOA.util.Util import Util
 from AOA.util.DataSet import DataSet
 from AOA.util.Constants import Constants
 import os
@@ -22,7 +21,7 @@ class ProcessPF:
     def process(self):
         train_x = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='train_x',
                                                dataset_index=self.dataset_index)
-        train_x = train_x[:, np.newaxis]
+        train_x = np.expand_dims(train_x.to_numpy(), axis=1)
         train_x_poly = self.ploy_reg.fit_transform(train_x)
 
         train_y = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='train_y',
