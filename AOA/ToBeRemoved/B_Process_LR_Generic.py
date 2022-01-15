@@ -23,9 +23,9 @@ class Process:
         train_y = DataSet.load_individual_data(base_file_name=self.base_file_name, array_name='train_y',
                                                dataset_index=self.dataset_index)
 
-        wb_array = self.linear_regression_instance.get_w_b_by_sgd(xs=train_x, ys=train_y,
-                                                                  learning_rate=self.learning_rate,
-                                                                  w_start=0, b_start=0, eps=self.eps)
+        wb_array = self.linear_regression_instance.get_theta_by_sgd(xs=train_x, ys=train_y,
+                                                                    learning_rate=self.learning_rate,
+                                                                    w_start=0, b_start=0, eps=self.eps)
 
         _local_dir = os.path.dirname(__file__)
         output_file_path = _local_dir + '/../' + Constants.DIRECTORY_WORK + '/' + self.base_file_name + '_' + self.wb_file_suffix
