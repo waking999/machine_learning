@@ -9,5 +9,5 @@ if __name__ == '__main__':
     process = Process(base_file_name=base_file_name,
                       dataset_index=0, sinx_file_suffix=sinx_file_suffix,
                       linear_regression_instance=linear_regression_instance,
-                      learning_rate=0.00000003, eps=0.0001)
+                      learning_rate=0.00000006, eps=0.0001)
     process.process()

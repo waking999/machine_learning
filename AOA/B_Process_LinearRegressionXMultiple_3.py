@@ -15,5 +15,5 @@ if __name__ == '__main__':
                       dataset_index=0, theta_file_suffix=theta_file_suffix,
                       num_of_variables=num_of_variables,
                       linear_regression_instance=linear_regression_instance,
-                      learning_rate=0.000000001, eps=0.00633)
+                      learning_rate=0.000000002, eps=0.00633)
     process.process()
