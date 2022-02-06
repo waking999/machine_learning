@@ -26,8 +26,8 @@ class Noch1:
             KNeighborsRegressor(n_neighbors=3),
             # SVR(C=50.0, cache_size=200, degree=100, epsilon=0.001,
             #     gamma=0.1, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
-            # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
-            #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
+            # # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
+            # #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
             # LinearRegression(),
             RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
         ]
@@ -74,25 +74,24 @@ class Noch1:
     def model_fit(self, x_data_training, y_data_training, fix_temperature, model):
         x_data_training_notemp = x_data_training.copy()
         x_data_training_notemp[:, 0] = fix_temperature
-        model.fit(X=x_data_training, y=y_data_training)
+        model.fit(X=x_data_training_notemp, y=y_data_training)
         return model
 
-    # def test_plot(self, test_data_file, x_data_training, y_data_training, model_seq):
-    #     df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
-    #     x_data_test = df.loc[:, 0:1].to_numpy()
-    #     y_data_test = df.loc[:, 2].to_numpy()
-    #
-    #     model_size = len(self.models)
-    #
-    #     model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-    #                            fix_temperature=self.temperature_base,
-    #                            model=self.models[model_seq])
-    #     y_data_model_temp = model.predict(x_data_test)
-    #
-    #     x_data_test_size = len(x_data_test)
-    #     for i in range(x_data_test_size):
-    #         plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
-    #         plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.traing_set_plot_color[i])
+    def test_plot(self, test_data_file, x_data_training, y_data_training, model_seq):
+        df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
+        x_data_test = df.loc[:, 0:1].to_numpy()
+        y_data_test = df.loc[:, 2].to_numpy()
+
+        model_size = len(self.models)
+        model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
+                               fix_temperature=self.temperature_base,
+                               model=self.models[model_seq])
+        y_data_model_temp = model.predict(x_data_test)
+
+        x_data_test_size = len(x_data_test)
+        for i in range(x_data_test_size):
+            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.traing_set_plot_color[i])
 
     def test_lf_plot(self, test_data_file, x_data_training, y_data_training):
         df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
@@ -126,11 +125,11 @@ class Noch1:
         plt.show()
 
         # test plot
-        # for i in range(len(self.models)):
-        #     self.test_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
-        #                    y_data_training=y_data_training, model_seq=i)
-        #     self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        #     #plt.show()
+        for i in range(len(self.models)):
+            self.test_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+                           y_data_training=y_data_training, model_seq=i)
+            self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
+            plt.show()
 
         # test lf plot
         self.test_lf_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
