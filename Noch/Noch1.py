@@ -21,18 +21,16 @@ class Noch1:
         self.set_size = 14
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
-        self.decision_tree = {"model": DecisionTreeRegressor(max_depth=12), "marker": '+', "color": 'lightpink'}
-        self.knn = {"model": KNeighborsRegressor(n_neighbors=3), "marker": '+', "color": 'crimson'}
-        self.svr = {"model": SVR(C=50.0, cache_size=200, degree=100, epsilon=0.001,
-                                 gamma=0.1, kernel='rbf',
-                                 max_iter=-1, shrinking=True, tol=0.001, verbose=False), "marker": '2',
-                    "color": 'orange'}
-        self.xgb = {"model": xgb.XGBRegressor(max_depth=127, learning_rate=0.01, n_estimators=1000,
-                                              objective='reg:tweedie', n_jobs=-1, booster='gbtree'), "marker": '3',
-                    "color": 'darkorange'}
-        self.lr = {"model": LinearRegression(), "marker": '4', "color": 'firebrick'}
-        self.rf = {"model": RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100), "marker": '8',
-                   "color": 'tomato'}
+        self.models = [
+            DecisionTreeRegressor(max_depth=12),
+            KNeighborsRegressor(n_neighbors=3),
+            # SVR(C=50.0, cache_size=200, degree=100, epsilon=0.001,
+            #     gamma=0.1, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
+            # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
+            #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
+            # LinearRegression(),
+            RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
+        ]
 
     @staticmethod
     def load_dataset(file_path, sep_char, header):
@@ -42,21 +40,7 @@ class Noch1:
     def err(self, p, x, y):
         return p[0] * x + p[1] - y
 
-    # def base_plot(self, base_data_file):
-    #     df = self.load_dataset(self._local_dir + base_data_file, sep_char=',', header=None)
-    #
-    #     x_data_base = df.loc[:, 1].to_numpy()
-    #     y_data_base = df.loc[:, 2].to_numpy()
-    #
-    #     k, b = self.linear_fitting(x_data_base, y_data_base)
-    #     y_data_linearfitting = k * x_data_base + b
-    #
-    #     # linear fitting
-    #     # plt.scatter(x_data_base, y_data_base, marker='.', c='lightgreen')
-    #     plt.plot(x_data_base, y_data_linearfitting.T, c='darkred')
-
     def training_plot(self, training_data_file):
-        # load training
         df = self.load_dataset(self._local_dir + training_data_file, sep_char=',', header=None)
         x_data_training = df.loc[:, 0:1].to_numpy()
         y_data_training = df.loc[:, 2].to_numpy()
@@ -70,9 +54,11 @@ class Noch1:
         return x_data_training, y_data_training
 
     def linear_fitting(self, x_data, y_data):
-        p0 = [100, 20]
+        p0 = np.array([100, 20])
+        x_data = x_data.astype('float')
+        y_data = y_data.astype('float')
         ret = leastsq(self.err, p0, args=(x_data, y_data))
-
+        print(ret)
         return ret[0]
 
     def base_plot(self, x_data_training, y_data_training):
@@ -82,86 +68,74 @@ class Noch1:
                       self.traing_set_base_seq * self.set_size:(self.traing_set_base_seq + 1) * self.set_size]
 
         k, b = self.linear_fitting(x_data_base, y_data_base)
-        y_data_linearfitting = k * x_data_base + b
-        plt.plot(x_data_base, y_data_linearfitting.T, c='darkred')
+        y_data_lf = k * x_data_base + b
+        plt.plot(x_data_base, y_data_lf.T, c='darkred')
 
-    def model_fit(self, x_data_training, y_data_training, fix_temperature, model_dict):
+    def model_fit(self, x_data_training, y_data_training, fix_temperature, model):
         x_data_training_notemp = x_data_training.copy()
         x_data_training_notemp[:, 0] = fix_temperature
-        model_dict["model"].fit(X=x_data_training, y=y_data_training)
-        return model_dict
+        model.fit(X=x_data_training, y=y_data_training)
+        return model
 
-    def model_prdict(self, model_dict, x_data_test, y_data_test):
-        y_data_model = model_dict['model'].predict(x_data_test)
-        x_data_test_size = len(x_data_test)
-        for i in range(x_data_test_size):
-            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
-            plt.scatter(x_data_test[i, 1], y_data_model[i], marker='+', color=self.traing_set_plot_color[i])
+    # def test_plot(self, test_data_file, x_data_training, y_data_training, model_seq):
+    #     df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
+    #     x_data_test = df.loc[:, 0:1].to_numpy()
+    #     y_data_test = df.loc[:, 2].to_numpy()
+    #
+    #     model_size = len(self.models)
+    #
+    #     model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
+    #                            fix_temperature=self.temperature_base,
+    #                            model=self.models[model_seq])
+    #     y_data_model_temp = model.predict(x_data_test)
+    #
+    #     x_data_test_size = len(x_data_test)
+    #     for i in range(x_data_test_size):
+    #         plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
+    #         plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.traing_set_plot_color[i])
 
-    def process(self):
-        x_data_training, y_data_training = self.training_plot(training_data_file='/input/noch1-training.csv')
-        self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        plt.show()
-
-        # load training
-        test_data_file = '/input/noch1-test.csv'
+    def test_lf_plot(self, test_data_file, x_data_training, y_data_training):
         df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
         x_data_test = df.loc[:, 0:1].to_numpy()
         y_data_test = df.loc[:, 2].to_numpy()
 
-        # # decision_tree
-        # self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        # model_dict_dt = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-        #                                fix_temperature=self.temperature_base,
-        #                                model_dict=self.decision_tree)
-        #
-        # self.model_prdict(model_dict_dt, x_data_test, y_data_test)
-        # plt.show()
+        x_data_test_size = len(x_data_test)
+        model_size = len(self.models)
 
-        # knn
-        self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        model_dict_knn = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
+        x_data_test_model = np.array([[None, None]])
+        y_data_test_model = np.array([None])
+        for i in range(model_size):
+            x_data_test_model = np.vstack((x_data_test_model, x_data_training))
+            model_temp = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
                                         fix_temperature=self.temperature_base,
-                                        model_dict=self.knn)
+                                        model=self.models[i])
+            y_data_model_temp = model_temp.predict(x_data_training)
+            y_data_test_model = np.hstack((y_data_test_model, y_data_model_temp))
 
-        self.model_prdict(model_dict_knn, x_data_test, y_data_test)
+        k, b = self.linear_fitting(x_data_test_model[1:, 1], y_data_test_model[1:])
+
+        for i in range(x_data_test_size):
+            y_data_test_lf_predict = k * x_data_test[i, 1] + b
+            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_test_lf_predict, marker='+', color=self.traing_set_plot_color[i])
+
+    def process(self):
+        # training plot
+        x_data_training, y_data_training = self.training_plot(training_data_file='/input/noch1-training.csv')
+        self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
         plt.show()
 
-        # # svr
-        # self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        # model_dict_svr = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-        #                                 fix_temperature=self.temperature_base,
-        #                                 model_dict=self.svr)
-        #
-        # self.model_prdict(model_dict_svr, x_data_test, y_data_test)
-        # plt.show()
+        # test plot
+        # for i in range(len(self.models)):
+        #     self.test_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+        #                    y_data_training=y_data_training, model_seq=i)
+        #     self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
+        #     #plt.show()
 
-        # # lr
-        # self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        # model_dict_lr = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-        #                                 fix_temperature=self.temperature_base,
-        #                                 model_dict=self.lr)
-        #
-        # self.model_prdict(model_dict_lr, x_data_test, y_data_test)
-        # plt.show()
-
-        # xgb
+        # test lf plot
+        self.test_lf_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+                          y_data_training=y_data_training)
         self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        model_dict_xgb = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-                                        fix_temperature=self.temperature_base,
-                                        model_dict=self.xgb)
-
-        self.model_prdict(model_dict_xgb, x_data_test, y_data_test)
-        plt.show()
-
-
-        # rf
-        self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
-        model_dict_rf = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-                                        fix_temperature=self.temperature_base,
-                                        model_dict=self.rf)
-
-        self.model_prdict(model_dict_rf, x_data_test, y_data_test)
         plt.show()
 
 
