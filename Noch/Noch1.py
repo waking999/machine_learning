@@ -7,9 +7,10 @@ from scipy.optimize import leastsq
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
-import xgboost as xgb
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
+# import xgboost as xgb
+# from sklearn.linear_model import LinearRegression
+# from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error
 
 
 class Noch1:
@@ -24,13 +25,14 @@ class Noch1:
         self.models = [
             DecisionTreeRegressor(max_depth=12),
             KNeighborsRegressor(n_neighbors=3),
-            # SVR(C=50.0, cache_size=200, degree=100, epsilon=0.001,
-            #     gamma=0.1, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
+            SVR(C=500, cache_size=200, degree=3, epsilon=0.0001,
+                gamma=0.00001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False)
             # # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
             # #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
             # LinearRegression(),
-            RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
+            # RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
         ]
+        self.model_mae = {}
 
     @staticmethod
     def load_dataset(file_path, sep_char, header):
@@ -61,15 +63,17 @@ class Noch1:
         print(ret)
         return ret[0]
 
-    def base_plot(self, x_data_training, y_data_training):
+    def base_plot(self, k, b, x_data_base):
+        y_data_lf = k * x_data_base + b
+        plt.plot(x_data_base, y_data_lf.T, c='darkred')
+
+    def calculate_base_kb(self, x_data_training, y_data_training):
         x_data_base = x_data_training[
                       self.traing_set_base_seq * self.set_size:(self.traing_set_base_seq + 1) * self.set_size, 1]
         y_data_base = y_data_training[
                       self.traing_set_base_seq * self.set_size:(self.traing_set_base_seq + 1) * self.set_size]
-
         k, b = self.linear_fitting(x_data_base, y_data_base)
-        y_data_lf = k * x_data_base + b
-        plt.plot(x_data_base, y_data_lf.T, c='darkred')
+        return k, b, x_data_base
 
     def model_fit(self, x_data_training, y_data_training, fix_temperature, model):
         x_data_training_notemp = x_data_training.copy()
@@ -77,26 +81,31 @@ class Noch1:
         model.fit(X=x_data_training_notemp, y=y_data_training)
         return model
 
-    def test_plot(self, test_data_file, x_data_training, y_data_training, model_seq):
+    def test_plot(self, test_data_file, x_data_training, y_data_training, model_seq, base_k, base_b):
         df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
         x_data_test = df.loc[:, 0:1].to_numpy()
         y_data_test = df.loc[:, 2].to_numpy()
 
-        model_size = len(self.models)
         model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
                                fix_temperature=self.temperature_base,
                                model=self.models[model_seq])
         y_data_model_temp = model.predict(x_data_test)
+
+        y_data_base = base_k * x_data_test + base_b
+        self.model_mae[model.__class__.__name__] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
 
         x_data_test_size = len(x_data_test)
         for i in range(x_data_test_size):
             plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
             plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.traing_set_plot_color[i])
 
-    def test_lf_plot(self, test_data_file, x_data_training, y_data_training):
+    def test_lf_plot(self, test_data_file, x_data_training, y_data_training, base_k, base_b):
         df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
         x_data_test = df.loc[:, 0:1].to_numpy()
         y_data_test = df.loc[:, 2].to_numpy()
+        y_data_base = base_k * x_data_test + base_b
+
+        self.model_mae["Origin"] = mean_absolute_error(y_data_base[:, 1], y_data_test)
 
         x_data_test_size = len(x_data_test)
         model_size = len(self.models)
@@ -111,31 +120,90 @@ class Noch1:
             y_data_model_temp = model_temp.predict(x_data_training)
             y_data_test_model = np.hstack((y_data_test_model, y_data_model_temp))
 
-        k, b = self.linear_fitting(x_data_test_model[1:, 1], y_data_test_model[1:])
+        sec_layer_k, sec_layer_b = self.linear_fitting(x_data_test_model[1:, 1], y_data_test_model[1:])
 
+        y_data_sec_layer = np.empty((x_data_test_size))
         for i in range(x_data_test_size):
-            y_data_test_lf_predict = k * x_data_test[i, 1] + b
+            y_data_test_lf_predict = sec_layer_k * x_data_test[i, 1] + sec_layer_b
             plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
             plt.scatter(x_data_test[i, 1], y_data_test_lf_predict, marker='+', color=self.traing_set_plot_color[i])
+            y_data_sec_layer[i] = y_data_test_lf_predict
+
+        self.model_mae["SecondLayerLinearFitting"] = mean_absolute_error(y_data_base[:, 1], y_data_sec_layer)
+
+    def test_svr(self, test_data_file, x_data_training, y_data_training, base_k, base_b):
+        df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
+        x_data_test = df.loc[:, 0:1].to_numpy()
+        y_data_base = base_k * x_data_test + base_b
+
+        i1 = 0.005
+        self.min_svr_mae = 1
+        while i1 <= 500:
+            i2 = 0.00001
+            while i2 <= 0.1:
+                i3 = 0.0000001
+                while i3 <= 0.1:
+                    i4 = 0.00001
+                    while i4 <= 0.01:
+                        model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
+                                    gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
+                        model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
+                                               fix_temperature=self.temperature_base,
+                                               model=model)
+                        y_data_model_temp = model.predict(x_data_test)
+                        mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3)+'_'+str(i4)
+                        self.model_mae[mae_name] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
+                        if (self.model_mae[mae_name] < self.min_svr_mae):
+                            self.min_svr_mae = self.model_mae[mae_name]
+                            self.min_svr_c = i1
+                            self.min_svr_g = i2
+                            self.min_svr_t = i3
+                            self.min_svr_e = i4
+                        i4 *= 10
+                    i3 *= 10
+                i2 *= 10
+            i1 *= 10
 
     def process(self):
         # training plot
         x_data_training, y_data_training = self.training_plot(training_data_file='/input/noch1-training.csv')
-        self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
+        base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
+
+        self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        output_file_path = self._local_dir + '/output/training.png'
+        plt.savefig(output_file_path)
         plt.show()
 
         # test plot
         for i in range(len(self.models)):
+            self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+
             self.test_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
-                           y_data_training=y_data_training, model_seq=i)
-            self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
+                           y_data_training=y_data_training, model_seq=i, base_k=base_k, base_b=base_b)
+
+            output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + '.png'
+            plt.savefig(output_file_path)
             plt.show()
 
         # test lf plot
+        self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
         self.test_lf_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
-                          y_data_training=y_data_training)
-        self.base_plot(x_data_training=x_data_training, y_data_training=y_data_training)
+                          y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+
+        output_file_path = self._local_dir + '/output/test_lf.png'
+        plt.savefig(output_file_path)
         plt.show()
+
+        # # test svr with different parameter values
+        # self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+        #               y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+        # print(self.min_svr_mae)
+        # print(self.min_svr_c)
+        # print(self.min_svr_g)
+        # print(self.min_svr_t)
+        # print(self.min_svr_e)
+
+        print(self.model_mae)
 
 
 if __name__ == '__main__':
