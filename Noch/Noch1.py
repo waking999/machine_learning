@@ -71,8 +71,6 @@ class Noch1:
     def training_test_plot_box_mae(self, x_data_training, y_data_training, base_k, base_b, model):
         mae_box_test = np.empty((self.set_size, self.num_training_set))
         mae_box_training = np.empty((self.set_size, self.num_training_set))
-        # fig, axes = plt.subplots(ncols=self.set_size, sharey=True, figsize=(self.set_size * 1, 2))
-        # fig.subplots_adjust(wspace=0)
 
         plt.figure()
 
@@ -91,11 +89,6 @@ class Noch1:
             mae_box_test[i] = mae_box_test_tmp
             ticks[i] = str(x_data_training[i, 1])
 
-            # # axes[i].set(title=str(x_data_training[i, 1]), y=-0.01)
-            # axes[i].set(xlabel='x-label')
-            # axes[i].boxplot([mae_box_test_tmp, mae_box_training_tmp], showfliers=False)
-            # axes[i].margins(0.05)
-
         mae_box_test_plot = plt.boxplot(mae_box_test.tolist(),
                                         positions=np.array(
                                             np.arange(self.set_size)) * 2.0 + 0.5,
@@ -109,33 +102,23 @@ class Noch1:
 
         plt.xticks(range(0, self.set_size * 2, 2), ticks)
         plt.xlim(-2, self.set_size * 2)
-        # plt.ylim(0, 8)
 
-        # draw temporary red and blue lines and use them to create a legend
         plt.plot([], c='#D7191C', label='SVR')
         plt.plot([], c='#2C7BB6', label='Without SVR')
         plt.legend()
 
         plt.tight_layout()
 
-    # def training_plot_3d(self, x_data_training, y_data_training):
-    #     x = np.unique(x_data_training[:, 0])
-    #     y = np.unique(x_data_training[:, 1])
-    #     Y,X = np.meshgrid(y, x)
-    #     Z = y_data_training.reshape((len(x), len(y)))
-    #
-    #     fig = plt.figure()
-    #     ax = fig.add_subplot(111, projection='3d')
-    #     surf = ax.plot_surface(X, Y, Z, cmap='rainbow' )
-    #     ax.scatter3D(X, Y, Z)
-    #
-    #
-    #
-    #     # ax.set_xticks([np.amin(y), np.amax(y)])
-    #     # ax.set_yticks([np.amin(x), np.amax(x)])
-    #     # ax.set_zticks([np.amin(y_data_training), np.amax(y_data_training)])
-    #     #
-    #     # ax.set_yticklabels([np.amin(x), np.amax(x)], rotation=-15, va='center', ha='right')
+    def training_plot_3d(self, x_data_training, y_data_training):
+        x = np.unique(x_data_training[:, 0])
+        y = np.unique(x_data_training[:, 1])
+        Y, X = np.meshgrid(y, x)
+        Z = y_data_training.reshape((len(x), len(y)))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(X, Y, Z, cmap='rainbow')
+        ax.scatter3D(X, Y, Z)
 
     def linear_fitting(self, x_data, y_data):
         p0 = np.array([100, 20])
@@ -278,7 +261,6 @@ class Noch1:
         output_file_path = self._local_dir + '/output/test_lf.png'
         plt.savefig(output_file_path)
         plt.show()
-        #
 
         # # test svr with different parameter values
         # self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
@@ -289,6 +271,9 @@ class Noch1:
         # print(self.min_svr_t)
         # print(self.min_svr_e)
         self.training_test_plot_box_mae(x_data_training, y_data_training, base_k, base_b, model=self.models[2])
+        self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        output_file_path = self._local_dir + '/output/training-test-box.png'
+        plt.savefig(output_file_path)
         plt.show()
 
         print(self.model_mae)
