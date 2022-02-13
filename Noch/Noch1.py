@@ -16,9 +16,9 @@ from sklearn.metrics import mean_absolute_error
 class Noch1:
     def __init__(self):
         self.num_training_set = 5
-        self.traing_set_base_seq = 2
+        self.training_set_base_seq = 2
         self.temperature_base = 30.9
-        self.traing_set_plot_color = ['red', 'gold', 'green', 'black', 'purple']
+        self.training_set_plot_color = ['red', 'gold', 'green', 'black', 'purple']
         self.set_size = 14
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
@@ -33,6 +33,12 @@ class Noch1:
             # RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
         ]
         self.model_mae = {}
+
+        self.min_svr_mae = None
+        self.min_svr_c = None
+        self.min_svr_g = None
+        self.min_svr_t = None
+        self.min_svr_e = None
 
     @staticmethod
     def load_dataset(file_path, sep_char, header):
@@ -50,10 +56,86 @@ class Noch1:
         for i in range(self.num_training_set):
             x_data_training_tmp = x_data_training[i * self.set_size:(i + 1) * self.set_size, 1]
             y_data_training_tmp = y_data_training[i * self.set_size:(i + 1) * self.set_size]
-            plt.scatter(x_data_training_tmp, y_data_training_tmp, marker="." if i != self.traing_set_base_seq else "x",
-                        c=self.traing_set_plot_color[i])
+            plt.scatter(x_data_training_tmp, y_data_training_tmp,
+                        marker="." if i != self.training_set_base_seq else "x",
+                        c=self.training_set_plot_color[i])
 
         return x_data_training, y_data_training
+
+    def set_box_color(self, bp, color):
+        plt.setp(bp['boxes'], color=color)
+        plt.setp(bp['whiskers'], color=color)
+        plt.setp(bp['caps'], color=color)
+        plt.setp(bp['medians'], color=color)
+
+    def training_test_plot_box_mae(self, x_data_training, y_data_training, base_k, base_b, model):
+        mae_box_test = np.empty((self.set_size, self.num_training_set))
+        mae_box_training = np.empty((self.set_size, self.num_training_set))
+        # fig, axes = plt.subplots(ncols=self.set_size, sharey=True, figsize=(self.set_size * 1, 2))
+        # fig.subplots_adjust(wspace=0)
+
+        plt.figure()
+
+        ticks = np.empty(self.set_size)
+        for i in range(self.set_size):
+            mae_box_training_tmp = np.empty(self.num_training_set)
+            mae_box_test_tmp = np.empty(self.num_training_set)
+            for j in range(self.num_training_set):
+                x_data_training_tmp = x_data_training[i + j * self.set_size, 1]
+                y_data_training_tmp = y_data_training[i + j * self.set_size]
+                y_data_base_tmp = base_k * x_data_training_tmp + base_b
+                mae_box_training_tmp[j] = mean_absolute_error([y_data_base_tmp], [y_data_training_tmp])
+                y_data_test_tmp = model.predict(np.array([[self.temperature_base, x_data_training_tmp]]))
+                mae_box_test_tmp[j] = mean_absolute_error([y_data_base_tmp], [y_data_test_tmp])
+            mae_box_training[i] = mae_box_training_tmp
+            mae_box_test[i] = mae_box_test_tmp
+            ticks[i] = str(x_data_training[i, 1])
+
+            # # axes[i].set(title=str(x_data_training[i, 1]), y=-0.01)
+            # axes[i].set(xlabel='x-label')
+            # axes[i].boxplot([mae_box_test_tmp, mae_box_training_tmp], showfliers=False)
+            # axes[i].margins(0.05)
+
+        mae_box_test_plot = plt.boxplot(mae_box_test.tolist(),
+                                        positions=np.array(
+                                            np.arange(self.set_size)) * 2.0 + 0.5,
+                                        widths=0.6, showfliers=False)
+        mae_box_training_plot = plt.boxplot(mae_box_training.tolist(),
+                                            positions=np.array(
+                                                np.arange(self.set_size)) * 2.0 + 1.5,
+                                            widths=0.6, showfliers=False)
+        self.set_box_color(mae_box_test_plot, '#D7191C')  # colors are from http://colorbrewer2.org/
+        self.set_box_color(mae_box_training_plot, '#2C7BB6')
+
+        plt.xticks(range(0, self.set_size * 2, 2), ticks)
+        plt.xlim(-2, self.set_size * 2)
+        # plt.ylim(0, 8)
+
+        # draw temporary red and blue lines and use them to create a legend
+        plt.plot([], c='#D7191C', label='SVR')
+        plt.plot([], c='#2C7BB6', label='Without SVR')
+        plt.legend()
+
+        plt.tight_layout()
+
+    # def training_plot_3d(self, x_data_training, y_data_training):
+    #     x = np.unique(x_data_training[:, 0])
+    #     y = np.unique(x_data_training[:, 1])
+    #     Y,X = np.meshgrid(y, x)
+    #     Z = y_data_training.reshape((len(x), len(y)))
+    #
+    #     fig = plt.figure()
+    #     ax = fig.add_subplot(111, projection='3d')
+    #     surf = ax.plot_surface(X, Y, Z, cmap='rainbow' )
+    #     ax.scatter3D(X, Y, Z)
+    #
+    #
+    #
+    #     # ax.set_xticks([np.amin(y), np.amax(y)])
+    #     # ax.set_yticks([np.amin(x), np.amax(x)])
+    #     # ax.set_zticks([np.amin(y_data_training), np.amax(y_data_training)])
+    #     #
+    #     # ax.set_yticklabels([np.amin(x), np.amax(x)], rotation=-15, va='center', ha='right')
 
     def linear_fitting(self, x_data, y_data):
         p0 = np.array([100, 20])
@@ -69,9 +151,9 @@ class Noch1:
 
     def calculate_base_kb(self, x_data_training, y_data_training):
         x_data_base = x_data_training[
-                      self.traing_set_base_seq * self.set_size:(self.traing_set_base_seq + 1) * self.set_size, 1]
+                      self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size, 1]
         y_data_base = y_data_training[
-                      self.traing_set_base_seq * self.set_size:(self.traing_set_base_seq + 1) * self.set_size]
+                      self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size]
         k, b = self.linear_fitting(x_data_base, y_data_base)
         return k, b, x_data_base
 
@@ -96,8 +178,8 @@ class Noch1:
 
         x_data_test_size = len(x_data_test)
         for i in range(x_data_test_size):
-            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
-            plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.traing_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.training_set_plot_color[i])
 
     def test_lf_plot(self, test_data_file, x_data_training, y_data_training, base_k, base_b):
         df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
@@ -122,11 +204,11 @@ class Noch1:
 
         sec_layer_k, sec_layer_b = self.linear_fitting(x_data_test_model[1:, 1], y_data_test_model[1:])
 
-        y_data_sec_layer = np.empty((x_data_test_size))
+        y_data_sec_layer = np.empty(x_data_test_size)
         for i in range(x_data_test_size):
             y_data_test_lf_predict = sec_layer_k * x_data_test[i, 1] + sec_layer_b
-            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.traing_set_plot_color[i])
-            plt.scatter(x_data_test[i, 1], y_data_test_lf_predict, marker='+', color=self.traing_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_test_lf_predict, marker='+', color=self.training_set_plot_color[i])
             y_data_sec_layer[i] = y_data_test_lf_predict
 
         self.model_mae["SecondLayerLinearFitting"] = mean_absolute_error(y_data_base[:, 1], y_data_sec_layer)
@@ -151,9 +233,9 @@ class Noch1:
                                                fix_temperature=self.temperature_base,
                                                model=model)
                         y_data_model_temp = model.predict(x_data_test)
-                        mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3)+'_'+str(i4)
+                        mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
                         self.model_mae[mae_name] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
-                        if (self.model_mae[mae_name] < self.min_svr_mae):
+                        if self.model_mae[mae_name] < self.min_svr_mae:
                             self.min_svr_mae = self.model_mae[mae_name]
                             self.min_svr_c = i1
                             self.min_svr_g = i2
@@ -174,6 +256,9 @@ class Noch1:
         plt.savefig(output_file_path)
         plt.show()
 
+        # self.training_plot_3d(x_data_training, y_data_training)
+        # plt.show()
+
         # test plot
         for i in range(len(self.models)):
             self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
@@ -193,6 +278,7 @@ class Noch1:
         output_file_path = self._local_dir + '/output/test_lf.png'
         plt.savefig(output_file_path)
         plt.show()
+        #
 
         # # test svr with different parameter values
         # self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
@@ -202,6 +288,8 @@ class Noch1:
         # print(self.min_svr_g)
         # print(self.min_svr_t)
         # print(self.min_svr_e)
+        self.training_test_plot_box_mae(x_data_training, y_data_training, base_k, base_b, model=self.models[2])
+        plt.show()
 
         print(self.model_mae)
 
