@@ -1,4 +1,6 @@
 import os
+
+import pandas
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,8 +27,10 @@ class Noch1:
         self.models = [
             DecisionTreeRegressor(max_depth=12),
             KNeighborsRegressor(n_neighbors=3),
-            SVR(C=500, cache_size=200, degree=3, epsilon=0.0001,
-                gamma=0.00001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False)
+            # SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
+            #     gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
+            SVR(C=0.005, cache_size=200, degree=3, epsilon=0.00001,
+                gamma=0.0001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
             # # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
             # #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
             # LinearRegression(),
@@ -34,6 +38,7 @@ class Noch1:
         ]
         self.model_mae = {}
 
+        self.model_svr_mae = pd.DataFrame()
         self.min_svr_mae = None
         self.min_svr_c = None
         self.min_svr_g = None
@@ -157,7 +162,7 @@ class Noch1:
         y_data_model_temp = model.predict(x_data_test)
 
         y_data_base = base_k * x_data_test + base_b
-        self.model_mae[model.__class__.__name__] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
+        self.model_mae[model.__class__.__name__+str(model_seq)] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
 
         x_data_test_size = len(x_data_test)
         for i in range(x_data_test_size):
@@ -218,6 +223,9 @@ class Noch1:
                         y_data_model_temp = model.predict(x_data_test)
                         mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
                         self.model_mae[mae_name] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
+                        self.model_svr_mae = self.model_svr_mae.append(
+                            {'mae_name': mae_name, 'C': i1, 'gamma': i2, 'tol': i3, 'eps': i4,
+                             'mae': self.model_mae[mae_name]}, ignore_index=True)
                         if self.model_mae[mae_name] < self.min_svr_mae:
                             self.min_svr_mae = self.model_mae[mae_name]
                             self.min_svr_c = i1
@@ -253,14 +261,14 @@ class Noch1:
             plt.savefig(output_file_path)
             plt.show()
 
-        # test lf plot
-        self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-        self.test_lf_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
-                          y_data_training=y_data_training, base_k=base_k, base_b=base_b)
-
-        output_file_path = self._local_dir + '/output/test_lf.png'
-        plt.savefig(output_file_path)
-        plt.show()
+        # # test lf plot
+        # self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        # self.test_lf_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+        #                   y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+        #
+        # output_file_path = self._local_dir + '/output/test_lf.png'
+        # plt.savefig(output_file_path)
+        # plt.show()
 
         # # test svr with different parameter values
         # self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
@@ -270,13 +278,18 @@ class Noch1:
         # print(self.min_svr_g)
         # print(self.min_svr_t)
         # print(self.min_svr_e)
+        # output_file_path = self._local_dir + '/output/' + 'svr_parameter_value.csv'
+        # self.model_svr_mae.to_csv(output_file_path, index=True)
+        # print(self.model_svr_mae)
+
         self.training_test_plot_box_mae(x_data_training, y_data_training, base_k, base_b, model=self.models[2])
-        self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
         output_file_path = self._local_dir + '/output/training-test-box.png'
         plt.savefig(output_file_path)
         plt.show()
 
+
         print(self.model_mae)
+
 
 
 if __name__ == '__main__':
