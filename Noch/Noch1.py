@@ -29,18 +29,17 @@ class Noch1:
             KNeighborsRegressor(n_neighbors=3),
             # SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
             #     gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
-            SVR(C=0.005, cache_size=200, degree=3, epsilon=0.00001,
-                gamma=0.0001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
-            # SVR(C=500, cache_size=200, degree=3, epsilon=0.0001,
-            #     gamma=1.00E-05, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
-
+            # SVR(C=0.005, cache_size=200, degree=3, epsilon=0.00001,
+            #     gamma=0.0001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
+            SVR(C=500, cache_size=200, degree=3, epsilon=0.0001,
+                gamma=1.00E-05, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False)
             # # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
             # #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
             # LinearRegression(),
             # RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
         ]
         self.model_mae = {}
-        self.favorit_svr_seq = 1
+        self.favorit_svr_seq = 2
 
         self.model_svr_mae = pd.DataFrame()
         self.min_svr_mae = None
