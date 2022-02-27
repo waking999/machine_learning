@@ -251,8 +251,10 @@ class Noch1:
         plt.savefig(output_file_path)
         plt.show()
 
-        # self.training_plot_3d(x_data_training, y_data_training)
-        # plt.show()
+        self.training_plot_3d(x_data_training, y_data_training)
+        output_file_path = self._local_dir + '/output/3d.png'
+        plt.savefig(output_file_path)
+        plt.show()
 
         # test plot
         for i in range(len(self.models)):
