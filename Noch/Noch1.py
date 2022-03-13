@@ -1,14 +1,15 @@
 import os
 
-import pandas
+# import pandas
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
+from sklearn.model_selection import GridSearchCV
 
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.svm import SVR
+# from sklearn.tree import DecisionTreeRegressor
+# from sklearn.neighbors import KNeighborsRegressor
+from sklearn.svm import SVR, SVC
 # import xgboost as xgb
 # from sklearn.linear_model import LinearRegression
 # from sklearn.ensemble import RandomForestRegressor
@@ -210,36 +211,66 @@ class Noch1:
         x_data_test = df.loc[:, 0:1].to_numpy()
         y_data_base = base_k * x_data_test + base_b
 
-        i1 = 0.005
-        self.min_svr_mae = 1
-        while i1 <= 500:
-            i2 = 0.00001
-            while i2 <= 0.1:
-                i3 = 0.0000001
-                while i3 <= 0.1:
-                    i4 = 0.00001
-                    while i4 <= 0.01:
-                        model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
-                                    gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
-                        model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-                                               fix_temperature=self.temperature_base,
-                                               model=model)
-                        y_data_model_temp = model.predict(x_data_test)
-                        mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
-                        self.model_mae[mae_name] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
-                        self.model_svr_mae = self.model_svr_mae.append(
-                            {'mae_name': mae_name, 'C': i1, 'gamma': i2, 'tol': i3, 'eps': i4,
-                             'mae': self.model_mae[mae_name]}, ignore_index=True)
-                        if self.model_mae[mae_name] < self.min_svr_mae:
-                            self.min_svr_mae = self.model_mae[mae_name]
-                            self.min_svr_c = i1
-                            self.min_svr_g = i2
-                            self.min_svr_t = i3
-                            self.min_svr_e = i4
-                        i4 *= 10
-                    i3 *= 10
-                i2 *= 10
-            i1 *= 10
+        # parameters = [{
+        #     'kernel': ['rbf'],
+        #     'C': np.logspace(base=10, start=-3, stop=2, num=6, endpoint=True) * 5,
+        #     'gamma': np.logspace(base=10, start=-5, stop=-1, num=5, endpoint=True),
+        #     'tol': np.logspace(base=10, start=-7, stop=-1, num=7, endpoint=True),
+        #     'epsilon': np.logspace(base=10, start=-5, stop=-2, num=4, endpoint=True),
+        #     'max_iter': [-1],
+        #     'cache_size': [200],
+        #     'degree': [3],
+        #     'shrinking': [True]
+        # }]
+        # print(parameters)
+
+        parameters = [{
+            'C': np.logspace(base=10, start=-3, stop=2, num=6, endpoint=True) * 5,
+            'gamma': np.logspace(base=10, start=-5, stop=-1, num=5, endpoint=True),
+            'tol': np.logspace(base=10, start=-7, stop=-1, num=7, endpoint=True),
+            'epsilon': np.logspace(base=10, start=-5, stop=-2, num=4, endpoint=True)
+        }]
+        # print(parameters)
+
+        clf = GridSearchCV(
+            SVR(kernel='rbf', shrinking=True, degree=3, cache_size=200, max_iter=-1),
+            param_grid=parameters,
+            scoring='neg_mean_absolute_error', verbose=0, n_jobs=-1
+        )
+        clf.fit(x_data_training, y_data_training)
+
+        print('clf.best_params_', clf.best_params_)
+
+        # i1 = 0.005
+        # self.min_svr_mae = 1
+        # while i1 <= 500:
+        #     i2 = 0.00001
+        #     while i2 <= 0.1:
+        #         i3 = 0.0000001
+        #         while i3 <= 0.1:
+        #             i4 = 0.00001
+        #             while i4 <= 0.01:
+        #                 model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
+        #                             gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
+        #                 model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
+        #                                        fix_temperature=self.temperature_base,
+        #                                        model=model)
+        #                 y_data_model_temp = model.predict(x_data_test)
+        #                 mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
+        #                 self.model_mae[mae_name] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
+        #                 self.model_svr_mae = self.model_svr_mae.append(
+        #                     {'mae_name': mae_name, 'C': i1, 'gamma': i2, 'tol': i3, 'eps': i4,
+        #                      'mae': self.model_mae[mae_name]}, ignore_index=True)
+        #                 if self.model_mae[mae_name] < self.min_svr_mae:
+        #                     self.min_svr_mae = self.model_mae[mae_name]
+        #                     self.min_svr_c = i1
+        #                     self.min_svr_g = i2
+        #                     self.min_svr_t = i3
+        #                     self.min_svr_e = i4
+        #                 i4 *= 10
+        #             i3 *= 10
+        #         i2 *= 10
+        #     i1 *= 10
 
     def process(self):
         # training plot
@@ -263,7 +294,7 @@ class Noch1:
             self.test_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
                            y_data_training=y_data_training, model_seq=i, base_k=base_k, base_b=base_b)
 
-            output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ +str(i)+ '.png'
+            output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + str(i) + '.png'
             plt.savefig(output_file_path)
             plt.show()
 
@@ -277,8 +308,8 @@ class Noch1:
         plt.show()
 
         # # test svr with different parameter values
-        # self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
-        #               y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+        self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+                      y_data_training=y_data_training, base_k=base_k, base_b=base_b)
         # print(self.min_svr_mae)
         # print(self.min_svr_c)
         # print(self.min_svr_g)
