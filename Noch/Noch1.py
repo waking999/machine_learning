@@ -9,7 +9,7 @@ from sklearn.model_selection import GridSearchCV
 
 # from sklearn.tree import DecisionTreeRegressor
 # from sklearn.neighbors import KNeighborsRegressor
-from sklearn.svm import SVR, SVC
+from sklearn.svm import SVR
 # import xgboost as xgb
 # from sklearn.linear_model import LinearRegression
 # from sklearn.ensemble import RandomForestRegressor
@@ -33,7 +33,7 @@ class Noch1:
             # SVR(C=0.005, cache_size=200, degree=3, epsilon=0.00001,
             #     gamma=0.0001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
             SVR(C=500, cache_size=200, degree=3, epsilon=0.0001,
-                gamma=1.00E-05, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False)
+                gamma=1.00E-05, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
             # # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
             # #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
             # LinearRegression(),
@@ -241,36 +241,36 @@ class Noch1:
 
         print('clf.best_params_', clf.best_params_)
 
-        # i1 = 0.005
-        # self.min_svr_mae = 1
-        # while i1 <= 500:
-        #     i2 = 0.00001
-        #     while i2 <= 0.1:
-        #         i3 = 0.0000001
-        #         while i3 <= 0.1:
-        #             i4 = 0.00001
-        #             while i4 <= 0.01:
-        #                 model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
-        #                             gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
-        #                 model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-        #                                        fix_temperature=self.temperature_base,
-        #                                        model=model)
-        #                 y_data_model_temp = model.predict(x_data_test)
-        #                 mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
-        #                 self.model_mae[mae_name] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
-        #                 self.model_svr_mae = self.model_svr_mae.append(
-        #                     {'mae_name': mae_name, 'C': i1, 'gamma': i2, 'tol': i3, 'eps': i4,
-        #                      'mae': self.model_mae[mae_name]}, ignore_index=True)
-        #                 if self.model_mae[mae_name] < self.min_svr_mae:
-        #                     self.min_svr_mae = self.model_mae[mae_name]
-        #                     self.min_svr_c = i1
-        #                     self.min_svr_g = i2
-        #                     self.min_svr_t = i3
-        #                     self.min_svr_e = i4
-        #                 i4 *= 10
-        #             i3 *= 10
-        #         i2 *= 10
-        #     i1 *= 10
+        i1 = 0.005
+        self.min_svr_mae = 1
+        while i1 <= 500:
+            i2 = 0.00001
+            while i2 <= 0.1:
+                i3 = 0.0000001
+                while i3 <= 0.1:
+                    i4 = 0.00001
+                    while i4 <= 0.01:
+                        model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
+                                    gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
+                        model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
+                                               fix_temperature=self.temperature_base,
+                                               model=model)
+                        y_data_model_temp = model.predict(x_data_test)
+                        mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
+                        self.model_mae[mae_name] = mean_absolute_error(y_data_base[:, 1], y_data_model_temp)
+                        self.model_svr_mae = self.model_svr_mae.append(
+                            {'mae_name': mae_name, 'C': i1, 'gamma': i2, 'tol': i3, 'eps': i4,
+                             'mae': self.model_mae[mae_name]}, ignore_index=True)
+                        if self.model_mae[mae_name] < self.min_svr_mae:
+                            self.min_svr_mae = self.model_mae[mae_name]
+                            self.min_svr_c = i1
+                            self.min_svr_g = i2
+                            self.min_svr_t = i3
+                            self.min_svr_e = i4
+                        i4 *= 10
+                    i3 *= 10
+                i2 *= 10
+            i1 *= 10
 
     def process(self):
         # training plot
@@ -310,14 +310,14 @@ class Noch1:
         # # test svr with different parameter values
         self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
                       y_data_training=y_data_training, base_k=base_k, base_b=base_b)
-        # print(self.min_svr_mae)
-        # print(self.min_svr_c)
-        # print(self.min_svr_g)
-        # print(self.min_svr_t)
-        # print(self.min_svr_e)
-        # output_file_path = self._local_dir + '/output/' + 'svr_parameter_value.csv'
-        # self.model_svr_mae.to_csv(output_file_path, index=True)
-        # print(self.model_svr_mae)
+        print(self.min_svr_mae)
+        print(self.min_svr_c)
+        print(self.min_svr_g)
+        print(self.min_svr_t)
+        print(self.min_svr_e)
+        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value.csv'
+        self.model_svr_mae.to_csv(output_file_path, index=True)
+        print(self.model_svr_mae)
 
         self.training_test_plot_box_mae(x_data_training, y_data_training, base_k, base_b,
                                         model=self.models[self.favorit_svr_seq])
