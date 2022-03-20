@@ -13,14 +13,27 @@ class Point:
         return "(" + str(self.x) + "," + str(self.y) + ")," + str(self.value) + "," + str(self.available)
 
 
+# sudoku = [
+#     [4, 0, 0, 0],
+#     [0, 0, 0, 1],
+#     [0, 0, 1, 0],
+#     [0, 0, 3, 0]
+# ]
+
+
 sudoku = [
-    [4, 0, 0, 0],
-    [0, 0, 0, 1],
-    [0, 0, 1, 0],
-    [0, 0, 3, 4]
+    [8, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 3, 6, 0, 0, 0, 0, 0],
+    [0, 7, 0, 0, 9, 0, 2, 0, 0],
+    [0, 5, 0, 0, 0, 7, 0, 0, 0],
+    [0, 0, 0, 0, 4, 5, 7, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 3, 0],
+    [0, 0, 1, 0, 0, 0, 0, 6, 8],
+    [0, 0, 8, 5, 0, 0, 0, 1, 0],
+    [0, 9, 0, 0, 0, 0, 4, 0, 0]
 ]
 
-SUDOKU_SIZE = 4
+SUDOKU_SIZE = 9
 SUDOKU_BLANK = 0
 
 
@@ -28,7 +41,7 @@ def init_point():
     global sudoku
     global SUDOKU_SIZE
     global SUDOKU_BLANK
-    _point_list = []
+
     _point_index_dict = {}
 
     for i in range(SUDOKU_SIZE):
@@ -39,36 +52,34 @@ def init_point():
                     if v not in row_num(_p) and v not in col_num(_p) and v not in block_num(_p):
                         _p.available.append(v)
 
-                _point_list.append(_p)
                 ind = i * SUDOKU_SIZE + j
-                _point_index_dict[ind] = len(_point_list) - 1
+                _point_index_dict[ind] = _p
 
                 if len(_p.available) == 1:
-                    remove_point_available(_p, _point_list, _point_index_dict, ind)
+                    remove_point_available(_p, _point_index_dict, ind)
 
-    return _point_list, _point_index_dict
+    return _point_index_dict
 
 
-def remove_point_available(_p, _point_list, _point_index_dict, ind):
+def remove_point_available(_p, _point_index_dict, ind):
     global sudoku
 
     _p.value = _p.available[0]
     sudoku[_p.x][_p.y] = _p.value
-    _point_list.pop(_point_index_dict[ind])
     _point_index_dict.pop(ind)
-    remove_available(_p, _point_list, _point_index_dict)
+    remove_available(_p, _point_index_dict)
 
 
-def remove_available(_p, _point_list, _point_index_dict):
+def remove_available(_p, _point_index_dict):
     global sudoku
 
-    remove_available_row(_p, _point_list, _point_index_dict)
-    remove_available_col(_p, _point_list, _point_index_dict)
-    remove_available_block(_p, _point_list, _point_index_dict)
+    remove_available_row(_p, _point_index_dict)
+    remove_available_col(_p, _point_index_dict)
+    remove_available_block(_p, _point_index_dict)
     show_sudoku()
 
 
-def remove_available_row(_p, _point_list, _point_index_dict):
+def remove_available_row(_p, _point_index_dict):
     global sudoku
 
     global SUDOKU_SIZE
@@ -77,22 +88,21 @@ def remove_available_row(_p, _point_list, _point_index_dict):
         if j != _p.y:
             dict_ind = _p.x * SUDOKU_SIZE + j
             if dict_ind in _point_index_dict:
-                list_ind=_point_index_dict[dict_ind]
-                tmp_p = _point_list[list_ind]
+                tmp_p = _point_index_dict[dict_ind]
                 try:
                     tmp_p.available.remove(_p.value)
                 except ValueError:
                     pass
 
                 if len(tmp_p.available) == 1:
-                    remove_point_available(tmp_p, _point_list, _point_index_dict, dict_ind)
+                    remove_point_available(tmp_p, _point_index_dict, dict_ind)
             else:
                 continue
         else:
             continue
 
 
-def remove_available_col(_p, _point_list, _point_index_dict):
+def remove_available_col(_p, _point_index_dict):
     global sudoku
     global SUDOKU_SIZE
 
@@ -100,20 +110,20 @@ def remove_available_col(_p, _point_list, _point_index_dict):
         if i != _p.x:
             ind = i * SUDOKU_SIZE + _p.y
             if ind in _point_index_dict:
-                tmp_p = _point_list[_point_index_dict[ind]]
+                tmp_p = _point_index_dict[ind]
                 try:
                     tmp_p.available.remove(_p.value)
                 except ValueError:
                     pass
                 if len(tmp_p.available) == 1:
-                    remove_point_available(tmp_p, _point_list, _point_index_dict, ind)
+                    remove_point_available(tmp_p, _point_index_dict, ind)
             else:
                 continue
         else:
             continue
 
 
-def remove_available_block(_p, _point_list, _point_index_dict):
+def remove_available_block(_p, _point_index_dict):
     global sudoku
 
     global SUDOKU_SIZE
@@ -125,13 +135,13 @@ def remove_available_block(_p, _point_list, _point_index_dict):
                 if j != _p.y:
                     ind = i * SUDOKU_SIZE + j
                     if ind in _point_index_dict:
-                        tmp_p = _point_list[_point_index_dict[ind]]
+                        tmp_p = _point_index_dict[ind]
                         try:
                             tmp_p.available.remove(_p.value)
                         except ValueError:
                             pass
                         if len(tmp_p.available) == 1:
-                            remove_point_available(tmp_p, _point_list, _point_index_dict, ind)
+                            remove_point_available(tmp_p, _point_index_dict, ind)
                     else:
                         continue
                 else:
@@ -154,7 +164,7 @@ def check(_p):
     return False
 
 
-def try_insert(_p, _point_list, _point_index_dict):
+def try_insert(_p, _point_index_dict):
     global sudoku
 
     for v in _p.available:
@@ -162,20 +172,22 @@ def try_insert(_p, _point_list, _point_index_dict):
         if check(_p):
 
             sudoku[_p.x][_p.y] = v
-            if len(_point_list) == 0:
+            if not bool(_point_index_dict):
                 t2 = time.time()
                 print("use time:" + str((t2 - t1) / 1000) + " s.")
                 show_sudoku()
                 exit()
 
-            p2_ind = _point_index_dict.popitem()
-            p2 = _point_list[p2_ind[1]]
-            try_insert(p2, _point_list, _point_index_dict)
-            p2.value = SUDOKU_BLANK
-            sudoku[p2.x][p2.y] = SUDOKU_BLANK
+            _p2_item = _point_index_dict.popitem()
+            _p2_ind = _p2_item[0]
+            _p2 = _p2_item[1]
+            try_insert(_p2, _point_index_dict)
+            _p2.value = SUDOKU_BLANK
+            sudoku[_p2.x][_p2.y] = SUDOKU_BLANK
+            _point_index_dict[_p2_ind] = _p2
+
             _p.value = SUDOKU_BLANK
             sudoku[_p.x][_p.y] = SUDOKU_BLANK
-            _point_list.append(p2)
 
 
 def row_num(_p):
@@ -239,23 +251,14 @@ if __name__ == '__main__':
     t1 = time.time()
 
     show_sudoku()
-    point_list, point_index_dict = init_point()
-    p_ind = point_index_dict.popitem()
-    p = point_list[p_ind[1]]
-    try_insert(p, point_list, point_index_dict)
+    point_index_dict = init_point()
+    if not bool(point_index_dict):
+        t2 = time.time()
+        print("use time:" + str((t2 - t1) / 1000) + " s.")
+        show_sudoku()
+        exit()
 
-    # sudoku = [
-    #     [8, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 3, 6, 0, 0, 0, 0, 0],
-    #     [0, 7, 0, 0, 9, 0, 2, 0, 0],
-    #     [0, 5, 0, 0, 0, 7, 0, 0, 0],
-    #     [0, 0, 0, 0, 4, 5, 7, 0, 0],
-    #     [0, 0, 0, 1, 0, 0, 0, 3, 0],
-    #     [0, 0, 1, 0, 0, 0, 0, 6, 8],
-    #     [0, 0, 8, 5, 0, 0, 0, 1, 0],
-    #     [0, 9, 0, 0, 0, 0, 4, 0, 0]
-    # ]
-    # showSudoku(sudoku)
-    # pointList = initPoint(sudoku)
-    # p = pointList.pop()
-    # tryInsert(p, sudoku, pointList)
+    p = point_index_dict.popitem()[1]
+    try_insert(p, point_index_dict)
+
+
