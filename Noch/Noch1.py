@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
 from sklearn.metrics import r2_score
-from sklearn.model_selection import GridSearchCV
+# from sklearn.model_selection import GridSearchCV
 
 # from sklearn.tree import DecisionTreeRegressor
 # from sklearn.neighbors import KNeighborsRegressor
@@ -177,6 +177,7 @@ class Noch1:
         x_data_test_size = len(x_data_test)
         for i in range(x_data_test_size):
             plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
+            print(str(x_data_test[i, 1])+','+str(y_data_model_temp[i]))
             plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.training_set_plot_color[i])
 
     def test_lf_plot(self, test_data_file, x_data_training, y_data_training, base_k, base_b):
@@ -313,16 +314,16 @@ class Noch1:
         plt.show()
 
         # # test svr with different parameter values
-        self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
-                      y_data_training=y_data_training, base_k=base_k, base_b=base_b)
-        print(self.min_svr_mae)
-        print(self.min_svr_c)
-        print(self.min_svr_g)
-        print(self.min_svr_t)
-        print(self.min_svr_e)
-        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value.csv'
-        self.model_svr_mae.to_csv(output_file_path, index=True)
-        print(self.model_svr_mae)
+        # self.test_svr(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+        #               y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+        # print(self.min_svr_mae)
+        # print(self.min_svr_c)
+        # print(self.min_svr_g)
+        # print(self.min_svr_t)
+        # print(self.min_svr_e)
+        # output_file_path = self._local_dir + '/output/' + 'svr_parameter_value.csv'
+        # self.model_svr_mae.to_csv(output_file_path, index=True)
+        # print(self.model_svr_mae)
 
         self.training_test_plot_box_mae(x_data_training, y_data_training, base_k, base_b,
                                         model=self.models[self.favorit_svr_seq])
