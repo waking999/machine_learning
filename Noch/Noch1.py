@@ -8,8 +8,8 @@ from scipy.optimize import leastsq
 from sklearn.metrics import r2_score
 # from sklearn.model_selection import GridSearchCV
 
-# from sklearn.tree import DecisionTreeRegressor
-# from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 # import xgboost as xgb
 # from sklearn.linear_model import LinearRegression
@@ -27,8 +27,8 @@ class Noch1:
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
         self.models = [
-            # DecisionTreeRegressor(max_depth=12),
-            # KNeighborsRegressor(n_neighbors=3),
+            DecisionTreeRegressor(max_depth=12),
+            KNeighborsRegressor(n_neighbors=3),
             # SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
             #     gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
             # SVR(C=0.005, cache_size=200, degree=3, epsilon=0.00001,
@@ -41,7 +41,7 @@ class Noch1:
             # RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
         ]
         self.model_mae = {}
-        self.favorit_svr_seq = 0
+        self.favorit_svr_seq = 2
 
         self.model_svr_mae = pd.DataFrame()
         self.min_svr_mae = None
@@ -78,7 +78,51 @@ class Noch1:
         plt.setp(bp['caps'], color=color)
         plt.setp(bp['medians'], color=color)
 
-    def training_test_plot_box_mae(self, x_data_training, y_data_training, base_k, base_b, model):
+    def training_test_plot_box_mae_2nd_lr(self, x_data_training, y_data_training, base_k, base_b, sec_lr_k, sec_lr_b):
+        mae_box_test = np.empty((self.set_size, self.num_training_set))
+        mae_box_training = np.empty((self.set_size, self.num_training_set))
+
+        plt.figure()
+
+        ticks = np.empty(self.set_size)
+        for i in range(self.set_size):
+            mae_box_training_tmp = np.empty(self.num_training_set)
+            mae_box_test_tmp = np.empty(self.num_training_set)
+            for j in range(self.num_training_set):
+                x_data_training_tmp = x_data_training[i + j * self.set_size, 1]
+                y_data_training_tmp = y_data_training[i + j * self.set_size]
+                y_data_base_tmp = base_k * x_data_training_tmp + base_b
+                mae_box_training_tmp[j] = mean_absolute_error([y_data_base_tmp], [y_data_training_tmp])
+                y_data_test_tmp = sec_lr_k * x_data_training_tmp + sec_lr_b
+                mae_box_test_tmp[j] = mean_absolute_error([y_data_base_tmp], [y_data_test_tmp])
+            mae_box_training[i] = mae_box_training_tmp
+            mae_box_test[i] = mae_box_test_tmp
+            ticks[i] = str(x_data_training[i, 1])
+
+        mae_box_test_plot = plt.boxplot(mae_box_test.tolist(),
+                                        positions=np.array(
+                                            np.arange(self.set_size)) * 2.0 + 0.5,
+                                        widths=0.6, showfliers=False)
+        mae_box_training_plot = plt.boxplot(mae_box_training.tolist(),
+                                            positions=np.array(
+                                                np.arange(self.set_size)) * 2.0 + 1.5,
+                                            widths=0.6, showfliers=False)
+        print('sec layer box')
+        print(mae_box_test)
+
+        self.set_box_color(mae_box_test_plot, '#D7191C')  # colors are from http://colorbrewer2.org/
+        self.set_box_color(mae_box_training_plot, '#2C7BB6')
+
+        plt.xticks(range(0, self.set_size * 2, 2), ticks)
+        plt.xlim(-2, self.set_size * 2)
+
+        plt.plot([], c='#D7191C', label='SVR')
+        plt.plot([], c='#2C7BB6', label='Without SVR')
+        plt.legend()
+
+        plt.tight_layout()
+
+    def training_test_plot_box_mae_svr(self, x_data_training, y_data_training, base_k, base_b, model):
         mae_box_test = np.empty((self.set_size, self.num_training_set))
         mae_box_training = np.empty((self.set_size, self.num_training_set))
 
@@ -107,6 +151,7 @@ class Noch1:
                                             positions=np.array(
                                                 np.arange(self.set_size)) * 2.0 + 1.5,
                                             widths=0.6, showfliers=False)
+
         self.set_box_color(mae_box_test_plot, '#D7191C')  # colors are from http://colorbrewer2.org/
         self.set_box_color(mae_box_training_plot, '#2C7BB6')
 
@@ -177,8 +222,10 @@ class Noch1:
         x_data_test_size = len(x_data_test)
         for i in range(x_data_test_size):
             plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
-            print(str(x_data_test[i, 1])+','+str(y_data_model_temp[i]))
+            # print(str(x_data_test[i, 1])+','+str(y_data_model_temp[i]))
             plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.training_set_plot_color[i])
+
+        # print('************')
 
     def test_lf_plot(self, test_data_file, x_data_training, y_data_training, base_k, base_b):
         df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
@@ -204,13 +251,16 @@ class Noch1:
         sec_layer_k, sec_layer_b = self.linear_fitting(x_data_test_model[1:, 1], y_data_test_model[1:])
 
         y_data_sec_layer = np.empty(x_data_test_size)
+        # print('algorithm 2nd layer lr')
         for i in range(x_data_test_size):
             y_data_test_lf_predict = sec_layer_k * x_data_test[i, 1] + sec_layer_b
             plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
             plt.scatter(x_data_test[i, 1], y_data_test_lf_predict, marker='+', color=self.training_set_plot_color[i])
+            # print(str(x_data_test[i, 1])+','+str(y_data_test_lf_predict))
             y_data_sec_layer[i] = y_data_test_lf_predict
 
         self.model_mae["SecondLayerLinearFitting"] = mean_absolute_error(y_data_base[:, 1], y_data_sec_layer)
+        return sec_layer_k, sec_layer_b
 
     def test_svr(self, test_data_file, x_data_training, y_data_training, base_k, base_b):
         df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
@@ -296,7 +346,7 @@ class Noch1:
         # test plot
         for i in range(len(self.models)):
             self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-
+            # print('algorithm:'+str(i))
             self.test_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
                            y_data_training=y_data_training, model_seq=i, base_k=base_k, base_b=base_b)
 
@@ -306,10 +356,16 @@ class Noch1:
 
         # test lf plot
         self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-        self.test_lf_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
-                          y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+        sec_lr_k, sec_lr_b = self.test_lf_plot(test_data_file='/input/noch1-test.csv', x_data_training=x_data_training,
+                                               y_data_training=y_data_training, base_k=base_k, base_b=base_b)
 
         output_file_path = self._local_dir + '/output/test_lf.png'
+        plt.savefig(output_file_path)
+        plt.show()
+
+        self.training_test_plot_box_mae_2nd_lr(x_data_training, y_data_training, base_k, base_b,
+                                               sec_lr_k, sec_lr_b)
+        output_file_path = self._local_dir + '/output/training-test-box-2ndlr.png'
         plt.savefig(output_file_path)
         plt.show()
 
@@ -325,9 +381,9 @@ class Noch1:
         # self.model_svr_mae.to_csv(output_file_path, index=True)
         # print(self.model_svr_mae)
 
-        self.training_test_plot_box_mae(x_data_training, y_data_training, base_k, base_b,
-                                        model=self.models[self.favorit_svr_seq])
-        output_file_path = self._local_dir + '/output/training-test-box.png'
+        self.training_test_plot_box_mae_svr(x_data_training, y_data_training, base_k, base_b,
+                                            model=self.models[self.favorit_svr_seq])
+        output_file_path = self._local_dir + '/output/training-test-box-svr.png'
         plt.savefig(output_file_path)
         plt.show()
 
