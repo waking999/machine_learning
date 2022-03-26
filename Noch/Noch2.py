@@ -290,13 +290,13 @@ class Noch2:
         #
         i1 = 0.0005
         self.min_svr_mae = 1
-        while i1 <= 5000:
+        while i1 <= 500:
             i2 = 0.00001
-            while i2 <= 100:
+            while i2 <= 0.1:
                 i3 = 0.0000001
-                while i3 <= 100:
+                while i3 <= 0.01:
                     i4 = 0.00001
-                    while i4 <= 100:
+                    while i4 <= 0.1:
                         model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
                                     gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
                         model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
