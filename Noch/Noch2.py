@@ -174,16 +174,33 @@ class Noch2:
         # clf.fit(x_data_training, y_data_training)
         #
         # print('clf.best_params_', clf.best_params_)
+        c_min = math.exp(step, -14)
+        c_max = math.exp(step, 16)
+        print('c:' + str(c_min) + ' - ' + str(c_max))
 
-        i1 = math.exp(step, -14)
+        gamma_min = math.exp(step, -29)
+        gamma_max = math.exp(step, -6)
+        print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
+
+        tol_min = math.exp(step, -40)
+        tol_max = math.exp(step, -6)
+        print('tol:' + str(tol_min) + ' - ' + str(tol_max))
+
+        epsilon_min = math.exp(step, -29)
+        epsilon_max = math.exp(step, -12)
+        print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
+
+
+        i1 = c_min
         self.min_svr_mae = 1
-        while i1 <= math.exp(step, 16):
-            i2 = math.exp(step, -29)
-            while i2 <= math.exp(step, -6):
-                i3 = math.exp(step, -40)
-                while i3 <= math.exp(step, -6):
-                    i4 = math.exp(step, -29)
-                    while i4 <= math.exp(step, -12):
+
+        while i1 <= c_max:
+            i2 = gamma_min
+            while i2 <= gamma_max:
+                i3 = tol_min
+                while i3 <= tol_max:
+                    i4 = epsilon_min
+                    while i4 <= epsilon_max:
                         model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
                                     gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
                         model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
