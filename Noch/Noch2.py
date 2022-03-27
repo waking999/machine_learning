@@ -1,5 +1,6 @@
 import math
 import os
+import time
 
 # import pandas
 import pandas as pd
@@ -159,10 +160,10 @@ class Noch2:
         # print(parameters)
 
         parameters = [{
-            'C': np.logspace(base=step, start=-14, stop=16, num=31, endpoint=True),
-            'gamma': np.logspace(base=step, start=-29, stop=-6, num=24, endpoint=True),
-            'tol': np.logspace(base=step, start=-40, stop=-6, num=35, endpoint=True),
-            'epsilon': np.logspace(base=step, start=-29, stop=-12, num=18, endpoint=True)
+            'C': np.logspace(base=step, start=7, stop=37, num=(37-7+1), endpoint=True),
+            'gamma': np.logspace(base=step, start=-15, stop=8, num=(8+15+1), endpoint=True),
+            'tol': np.logspace(base=step, start=-42, stop=-4, num=(42-4+1), endpoint=True),
+            'epsilon': np.logspace(base=step, start=-17, stop=0, num=(0+17+1), endpoint=True)
         }]
         print(parameters)
 
@@ -174,20 +175,20 @@ class Noch2:
         # clf.fit(x_data_training, y_data_training)
         #
         # print('clf.best_params_', clf.best_params_)
-        c_min = step ** -14
-        c_max = step ** 16
+        c_min = step ** 7
+        c_max = step ** 37
         print('c:' + str(c_min) + ' - ' + str(c_max))
 
-        gamma_min = step ** -29
-        gamma_max = step ** -6
+        gamma_min = step ** -15
+        gamma_max = step ** 8
         print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
 
-        tol_min = step ** -40
-        tol_max = step ** -6
+        tol_min = step ** -42
+        tol_max = step ** -4
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
-        epsilon_min = step ** -29
-        epsilon_max = step ** -12
+        epsilon_min = step ** -17
+        epsilon_max = step ** 0
         print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
 
         i1 = c_min
@@ -234,8 +235,11 @@ class Noch2:
         plt.show()
 
         # # # test svr with different parameter values
+        t1 = time.time()
         self.test_svr(test_data_file='/input/noch2-test.csv', x_data_training=x_data_training,
                       y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+        t2=time.time()
+        print('parameter value spends '+str((t2-t1)/60)+'s')
         print(self.min_svr_mae)
         print(self.min_svr_c)
         print(self.min_svr_g)
@@ -243,7 +247,7 @@ class Noch2:
         print(self.min_svr_e)
         output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-2.csv'
         self.model_svr_mae.to_csv(output_file_path, index=True)
-        print(self.model_svr_mae)
+        # print(self.model_svr_mae)
 
         # # test plot
         # for i in range(len(self.models)):
