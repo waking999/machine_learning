@@ -28,15 +28,6 @@ class Noch2:
         self.set_size = 14
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
-        c
-
-        gamma
-
-        tol
-
-        eps
-
-
         self.models = [
             # DecisionTreeRegressor(max_depth=12),
             # KNeighborsRegressor(n_neighbors=3),
@@ -45,7 +36,8 @@ class Noch2:
             # SVR(C=0.005, cache_size=200, degree=3, epsilon=0.00001,
             #     gamma=0.0001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
             SVR(C=11222.741464018822, cache_size=200, degree=3, epsilon=0.001522438840347445,
-                gamma=5.062499999999998, kernel='rbf', max_iter=-1, shrinking=True, tol= 0.00020048577321447826, verbose=False)
+                gamma=5.062499999999998, kernel='rbf', max_iter=-1, shrinking=True, tol=0.00020048577321447826,
+                verbose=False)
             # # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
             # #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
             # LinearRegression(),
@@ -169,10 +161,10 @@ class Noch2:
         # print(parameters)
 
         parameters = [{
-            'C': np.logspace(base=step, start=7, stop=37, num=(37-7+1), endpoint=True),
-            'gamma': np.logspace(base=step, start=-15, stop=8, num=(8+15+1), endpoint=True),
-            'tol': np.logspace(base=step, start=-42, stop=-4, num=(42-4+1), endpoint=True),
-            'epsilon': np.logspace(base=step, start=-17, stop=0, num=(0+17+1), endpoint=True)
+            'C': np.logspace(base=step, start=7, stop=37, num=(37 - 7 + 1), endpoint=True),
+            'gamma': np.logspace(base=step, start=-15, stop=8, num=(8 + 15 + 1), endpoint=True),
+            'tol': np.logspace(base=step, start=-42, stop=-4, num=(42 - 4 + 1), endpoint=True),
+            'epsilon': np.logspace(base=step, start=-17, stop=0, num=(0 + 17 + 1), endpoint=True)
         }]
         print(parameters)
 
@@ -190,7 +182,6 @@ class Noch2:
         clf.fit(X=y_data_measured, y=y_data_corrected)
 
         print('clf.best_params_', clf.best_params_)
-
 
         # c_min = step ** 7
         # c_max = step ** 37
@@ -255,8 +246,8 @@ class Noch2:
         t1 = time.time()
         self.test_svr(test_data_file='/input/noch2-test.csv', x_data_training=x_data_training,
                       y_data_training=y_data_training, base_k=base_k, base_b=base_b)
-        t2=time.time()
-        print('parameter value spends '+str((t2-t1)/60)+'s')
+        t2 = time.time()
+        print('parameter value spends ' + str((t2 - t1) / 60) + 's')
         print(self.min_svr_mae)
         print(self.min_svr_c)
         print(self.min_svr_g)
