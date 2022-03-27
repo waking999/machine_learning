@@ -174,22 +174,21 @@ class Noch2:
         # clf.fit(x_data_training, y_data_training)
         #
         # print('clf.best_params_', clf.best_params_)
-        c_min = math.exp(step, -14)
-        c_max = math.exp(step, 16)
+        c_min = step ** -14
+        c_max = step ** 16
         print('c:' + str(c_min) + ' - ' + str(c_max))
 
-        gamma_min = math.exp(step, -29)
-        gamma_max = math.exp(step, -6)
+        gamma_min = step ** -29
+        gamma_max = step ** -6
         print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
 
-        tol_min = math.exp(step, -40)
-        tol_max = math.exp(step, -6)
+        tol_min = step ** -40
+        tol_max = step ** -6
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
-        epsilon_min = math.exp(step, -29)
-        epsilon_max = math.exp(step, -12)
+        epsilon_min = step ** -29
+        epsilon_max = step ** -12
         print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
-
 
         i1 = c_min
         self.min_svr_mae = 1
