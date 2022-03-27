@@ -1,3 +1,4 @@
+import math
 import os
 
 # import pandas
@@ -6,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
 from sklearn.metrics import r2_score
-# from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
@@ -142,6 +143,7 @@ class Noch2:
         y_data_test = df.loc[:, 2].to_numpy()
         y_data_base = base_k * x_data_test[:, 1] + base_b
         # x_data_base = (y_data_test - base_b)/base_k
+        step = 1.5
 
         # parameters = [{
         #     'kernel': ['rbf'],
@@ -156,14 +158,14 @@ class Noch2:
         # }]
         # print(parameters)
 
-        # parameters = [{
-        #     'C': np.logspace(base=10, start=-3, stop=2, num=6, endpoint=True) * 5,
-        #     'gamma': np.logspace(base=10, start=-5, stop=-1, num=5, endpoint=True),
-        #     'tol': np.logspace(base=10, start=-7, stop=-1, num=7, endpoint=True),
-        #     'epsilon': np.logspace(base=10, start=-5, stop=-2, num=4, endpoint=True)
-        # }]
-        # # print(parameters)
-        #
+        parameters = [{
+            'C': np.logspace(base=step, start=-14, stop=16, num=31, endpoint=True),
+            'gamma': np.logspace(base=step, start=-29, stop=-6, num=24, endpoint=True),
+            'tol': np.logspace(base=step, start=-40, stop=-6, num=35, endpoint=True),
+            'epsilon': np.logspace(base=step, start=-29, stop=-12, num=18, endpoint=True)
+        }]
+        print(parameters)
+
         # clf = GridSearchCV(
         #     SVR(kernel='rbf', shrinking=True, degree=3, cache_size=200, max_iter=-1),
         #     param_grid=parameters,
@@ -172,16 +174,16 @@ class Noch2:
         # clf.fit(x_data_training, y_data_training)
         #
         # print('clf.best_params_', clf.best_params_)
-        #
-        i1 = 0.005
+
+        i1 = math.exp(step, -14)
         self.min_svr_mae = 1
-        while i1 <= 500:
-            i2 = 0.00001
-            while i2 <= 0.1:
-                i3 = 0.0000001
-                while i3 <= 0.1:
-                    i4 = 0.00001
-                    while i4 <= 0.01:
+        while i1 <= math.exp(step, 16):
+            i2 = math.exp(step, -29)
+            while i2 <= math.exp(step, -6):
+                i3 = math.exp(step, -40)
+                while i3 <= math.exp(step, -6):
+                    i4 = math.exp(step, -29)
+                    while i4 <= math.exp(step, -12):
                         model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
                                     gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
                         model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
@@ -200,10 +202,10 @@ class Noch2:
                             self.min_svr_g = i2
                             self.min_svr_t = i3
                             self.min_svr_e = i4
-                        i4 *= 2
-                    i3 *= 2
-                i2 *= 2
-            i1 *= 2
+                        i4 *= 1.5
+                    i3 *= 1.5
+                i2 *= 1.5
+            i1 *= 1.5
 
     def process(self):
         # training plot
@@ -216,25 +218,25 @@ class Noch2:
         plt.show()
 
         # # # test svr with different parameter values
-        # self.test_svr(test_data_file='/input/noch2-test.csv', x_data_training=x_data_training,
-        #               y_data_training=y_data_training, base_k=base_k, base_b=base_b)
-        # print(self.min_svr_mae)
-        # print(self.min_svr_c)
-        # print(self.min_svr_g)
-        # print(self.min_svr_t)
-        # print(self.min_svr_e)
-        # output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-2.csv'
-        # self.model_svr_mae.to_csv(output_file_path, index=True)
-        # print(self.model_svr_mae)
+        self.test_svr(test_data_file='/input/noch2-test.csv', x_data_training=x_data_training,
+                      y_data_training=y_data_training, base_k=base_k, base_b=base_b)
+        print(self.min_svr_mae)
+        print(self.min_svr_c)
+        print(self.min_svr_g)
+        print(self.min_svr_t)
+        print(self.min_svr_e)
+        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-2.csv'
+        self.model_svr_mae.to_csv(output_file_path, index=True)
+        print(self.model_svr_mae)
 
         # # test plot
-        for i in range(len(self.models)):
-            self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-            self.test_plot(test_data_file='/input/noch2-test.csv', x_data_training=x_data_training,
-                           y_data_training=y_data_training, model_seq=i, base_k=base_k, base_b=base_b)
-            output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + str(i) + '-2.png'
-            plt.savefig(output_file_path)
-            plt.show()
+        # for i in range(len(self.models)):
+        #     self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        #     self.test_plot(test_data_file='/input/noch2-test.csv', x_data_training=x_data_training,
+        #                    y_data_training=y_data_training, model_seq=i, base_k=base_k, base_b=base_b)
+        #     output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + str(i) + '-2.png'
+        #     plt.savefig(output_file_path)
+        #     plt.show()
 
 
 if __name__ == '__main__':
