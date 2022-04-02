@@ -222,10 +222,10 @@ class Noch2:
 
                         model.fit(X=x_data_fit, y=y_data_fit)
 
-                        y_data_training_corrected = model.predict(x_data_test)
+                        y_data_test_corrected = model.predict(x_data_test)
                         mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
                         # x_data_corrected = (y_data_training_corrected - base_b) / base_k
-                        self.model_mae[mae_name] = mean_absolute_error(y_data_test_base, y_data_training_corrected)
+                        self.model_mae[mae_name] = mean_absolute_error(y_data_test_base, y_data_test_corrected)
                         self.model_svr_mae = self.model_svr_mae.append(
                             {'mae_name': mae_name, 'C': i1, 'gamma': i2, 'tol': i3, 'eps': i4,
                              'mae': self.model_mae[mae_name]}, ignore_index=True)
