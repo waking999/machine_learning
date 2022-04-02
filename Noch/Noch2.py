@@ -25,7 +25,7 @@ class Noch2:
         self.num_training_set = 5
         self.training_set_base_seq = 2
         self.temperature_base = 30.9
-        self.training_set_plot_color = ['red', 'gold', 'green', 'black', 'purple','blue']
+        self.training_set_plot_color = ['red', 'gold', 'green', 'black', 'purple', 'blue']
         self.set_size = 13
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
@@ -112,10 +112,12 @@ class Noch2:
     def model_fit(self, x_data_training, y_data_training, model, base_k, base_b):
         # corrected frequency
         y_data_corrected = base_k * x_data_training[:, 1] + base_b
+
         # measured frequency
         y_data_measured = np.reshape(y_data_training, (-1, 1))
+        x_data_training[:, 1] = y_data_measured[0]
 
-        model.fit(X=y_data_measured, y=y_data_corrected)
+        model.fit(X=x_data_training, y=y_data_corrected)
         return model
 
     def test_plot(self, test_data_file, x_data_training, y_data_training, model_seq, base_k, base_b):
@@ -143,13 +145,26 @@ class Noch2:
             #     y_data_test_corrected[i]) + ',' + str(stress_predicted))
 
     def mae_parameter_search(self, test_data_file, x_data_training, y_data_training, base_k, base_b):
-        # df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
-        # x_data_test = df.loc[:, 0:1].to_numpy()
-        # y_data_test = df.loc[:, 2].to_numpy()
-        y_data_base = base_k * x_data_training[:, 1] + base_b
+        df = self.load_dataset(self._local_dir + test_data_file, sep_char=',', header=None)
+        # y_data_test_base = base_k * df.loc[:, 1].to_numpy() + base_b
+        # y_data_test_base = np.reshape(y_data_test_base, (-1, 1))
+        # x_data_test = df.loc[:, 2].to_numpy()
+        # x_data_test = np.reshape(x_data_test, (-1, 1))
+
+        y_data_test_base = base_k * x_data_training[:, 1] + base_b
+        y_data_test_base = np.reshape(y_data_test_base, (-1, 1))
+        x_data_test = np.copy(y_data_training)
+        x_data_test = np.reshape(x_data_test, (-1, 1))
+
+        y_data_fit = base_k * x_data_training[:, 1] + base_b
+        # y_data_fit = np.reshape(y_data_fit, (-1, 1))
+        # x_data_fit = np.copy(x_data_training)
+        x_data_fit = np.copy(y_data_training)
+        x_data_fit = np.reshape(x_data_fit, (-1, 1))
+
+        # y_data_measured = np.reshape(y_data_training, (-1, 1))
+
         step = 1.5
-
-
 
         parameters = [{
             'C': np.logspace(base=step, start=7, stop=37, num=(37 - 7 + 1), endpoint=True),
@@ -204,13 +219,13 @@ class Noch2:
                     while i4 <= epsilon_max:
                         model = SVR(C=i1, cache_size=200, degree=3, epsilon=i4,
                                     gamma=i2, kernel='rbf', max_iter=-1, shrinking=True, tol=i3, verbose=False)
-                        model = self.model_fit(x_data_training=x_data_training, y_data_training=y_data_training,
-                                               base_k=base_k, base_b=base_b, model=model)
 
-                        y_data_training_corrected = model.predict(y_data_training)
+                        model.fit(X=x_data_fit, y=y_data_fit)
+
+                        y_data_training_corrected = model.predict(x_data_test)
                         mae_name = 'SVR_' + str(i1) + '_' + str(i2) + '_' + str(i3) + '_' + str(i4)
                         # x_data_corrected = (y_data_training_corrected - base_b) / base_k
-                        self.model_mae[mae_name] = mean_absolute_error(y_data_base, y_data_training_corrected)
+                        self.model_mae[mae_name] = mean_absolute_error(y_data_test_base, y_data_training_corrected)
                         self.model_svr_mae = self.model_svr_mae.append(
                             {'mae_name': mae_name, 'C': i1, 'gamma': i2, 'tol': i3, 'eps': i4,
                              'mae': self.model_mae[mae_name]}, ignore_index=True)
@@ -253,7 +268,6 @@ class Noch2:
             mae_tmp = mean_absolute_error(y_expect, y_actual)
             corrected_mae_random.append(mae_tmp)
 
-
         corrected_mae_random_avg = sum(corrected_mae_random) / len(corrected_mae_random)
         return corrected_mae_random, corrected_mae_random_avg
 
@@ -278,8 +292,6 @@ class Noch2:
             y_data_training_mae.append(y_data_training_mae_tmp)
 
         return traing_mae_ind, np.array(x_data_training_mae), y_data_training_mae
-
-
 
     def process(self):
         # training plot
