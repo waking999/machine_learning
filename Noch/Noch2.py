@@ -189,20 +189,20 @@ class Noch2:
 
         # print('clf.best_params_', clf.best_params_)
 
-        c_min = step ** -14
-        c_max = step ** 37
+        c_min = step ** -3
+        c_max = step ** 48
         print('c:' + str(c_min) + ' - ' + str(c_max))
 
-        gamma_min = step ** -36
-        gamma_max = step ** 8
+        gamma_min = step ** 6
+        gamma_max = step ** 50
         print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
 
-        tol_min = step ** -50
-        tol_max = step ** -4
+        tol_min = step ** -70
+        tol_max = step ** -24
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
-        epsilon_min = step ** -30
-        epsilon_max = step ** 0
+        epsilon_min = step ** -36
+        epsilon_max = step ** -6
         print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
 
         y_data_training = np.reshape(y_data_training, (-1, 1))
@@ -308,7 +308,7 @@ class Noch2:
         self.mae_parameter_search(test_data_file='/input/noch2-test.csv', x_data_training=x_data_training,
                                   y_data_training=y_data_training, base_k=base_k, base_b=base_b)
         t2 = time.time()
-        print('parameter value spends ' + str((t2 - t1) / 60) + 's')
+        print('parameter value spends ' + str((t2 - t1))  + 's')
         print(self.min_svr_mae)
         print(self.min_svr_c)
         print(self.min_svr_g)
