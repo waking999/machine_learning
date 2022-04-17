@@ -1,8 +1,8 @@
 import unittest
-from LeetCode.L0001_TwoSum import L0001_TwoSum as leet
+import L0001_TwoSum as leet
 
 
-class MyTestCase(unittest.TestCase):
+class L0001_TwoSumTest(unittest.TestCase):
     def test_1(self):
         s = leet.Solution()
         nums = [2, 7, 11, 15]

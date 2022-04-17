@@ -2,7 +2,7 @@ import unittest
 import L0013_RomanToInteger as leet
 
 
-class MyTestCase(unittest.TestCase):
+class L0013_RomanToIntegerTest(unittest.TestCase):
     def test_1(self):
         _s = leet.Solution()
         s = 'III'

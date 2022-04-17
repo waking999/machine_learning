@@ -2,7 +2,7 @@ import unittest
 import L0009_PalindromeNumber as leet
 
 
-class MyTestCase(unittest.TestCase):
+class L0009_PalindromeNumberTest(unittest.TestCase):
     def test_1(self):
         s = leet.Solution()
         x = 121

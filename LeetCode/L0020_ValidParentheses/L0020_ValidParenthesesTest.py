@@ -2,7 +2,7 @@ import unittest
 import L0020_ValidParentheses as leet
 
 
-class MyTestCase(unittest.TestCase):
+class L0020_ValidParenthesesTest(unittest.TestCase):
     def test_1(self):
         _s = leet.Solution()
         s = "()"

@@ -2,7 +2,7 @@ import unittest
 import L0014_LongestCommonPrefix as leet
 
 
-class MyTestCase(unittest.TestCase):
+class L0020_ValidParenthesesTest(unittest.TestCase):
     def test_1(self):
         s = leet.Solution()
         strs = ["flower", "flow", "flight"]
