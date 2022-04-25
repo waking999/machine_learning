@@ -1,5 +1,5 @@
 from typing import Optional
-from ListNode import ListNode
+from LeetCode.common.ListNode import ListNode
 
 
 class Solution:

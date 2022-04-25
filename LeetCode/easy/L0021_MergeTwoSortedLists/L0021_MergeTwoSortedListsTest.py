@@ -1,6 +1,6 @@
 import unittest
 import L0021_MergeTwoSortedLists as leet
-from ListNode import ListNode
+from LeetCode.common.ListNode import ListNode
 
 
 class L0021_MergeTwoSortedListsTest(unittest.TestCase):
