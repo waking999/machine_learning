@@ -10,7 +10,8 @@ class Solution:
         _str = ''
         if root.left is not None:
             _str += self._inorderTraversal(root.left)
-        _str += str(root.val) + ' '
+        if root.val is not None:
+            _str += str(root.val) + ' '
         if root.right is not None:
             _str += self._inorderTraversal(root.right)
         return _str
