@@ -10,7 +10,10 @@ class TreeNode:
         _str = ''
         if self.left is not None and self.left.val is not None:
             _str += self.left._inorder()
-        _str += str(self.val)
+        if self.val is not None:
+            _str += str(self.val) + '_'
+        else:
+            _str += '_'
         if self.right is not None and self.right.val is not None:
             _str += self.right._inorder()
         return _str
@@ -38,8 +41,7 @@ class TreeNode:
                     tmp.left = v_node
                     que.append(v_node)
                 else:
-                    v_node = TreeNode(v)
-                    tmp.left = v_node
+                    tmp.left = None
                 _index += 1
                 if tmp.right is None:
                     if _index >= len(_list):
@@ -50,8 +52,7 @@ class TreeNode:
                         tmp.right = v_node
                         que.append(v_node)
                     else:
-                        v_node = TreeNode(v)
-                        tmp.right = v_node
+                        tmp.right = None
                     _index += 1
                 else:
                     que.append(tmp.right)
