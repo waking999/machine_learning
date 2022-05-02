@@ -19,6 +19,14 @@ class MyTestCase(unittest.TestCase):
         actual = _s.digitSum(s, k)
         self.assertEqual(expect, actual)
 
+    def test_3(self):
+        _s = leet.Solution()
+        s = "1234"
+        k = 2
+        expect = "37"
+        actual = _s.digitSum(s, k)
+        self.assertEqual(expect, actual)
+
 
 if __name__ == '__main__':
     unittest.main()
