@@ -4,25 +4,17 @@ from typing import List
 class Solution:
     def subarraysDivByK(self, nums: List[int], k: int) -> int:
         _len = len(nums)
-        _sum = [0 for i in range(_len + 1)]
-
-        for i in range(_len):
-            _sum[i + 1] = _sum[i] + nums[i]
-
+        count = 0
+        _sum = 0
         d = {}
-        count=0
-        for i in range(_len + 1):
-            m = _sum[i] % k
-            if m in d.keys():
-                count+=d[m]
-                d[m] += 1
+        d[0] = 1
+        for i in range(_len):
+            _sum = (_sum + nums[i] % k + k) % k
+            if _sum in d.keys():
+                count += d[_sum]
+                d[_sum] += 1
             else:
-                d[m] = 1
-
-        # count = 0
-        # for i in d.keys():
-        #     if d[i]>=2:
-        #         count += self.com(d[i], 2)
+                d[_sum] = 1
 
         return count
 
