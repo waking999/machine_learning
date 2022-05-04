@@ -24,6 +24,13 @@ class L0053_MaximumSubarrayTest(unittest.TestCase):
         actual = _s.maxSubArray(nums)
         self.assertEqual(expect, actual)
 
+    def test_4(self):
+        _s = leet.Solution()
+        nums = [1]
+        expect = 1
+        actual = _s.maxSubArray(nums)
+        self.assertEqual(expect, actual)
+
 
 if __name__ == '__main__':
     unittest.main()
