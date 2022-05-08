@@ -21,6 +21,8 @@ class Noch3:
         self.set_size = 13
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
+        self.sc = StandardScaler()
+
         self.models = [
 
             # SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
@@ -88,28 +90,29 @@ class Noch3:
         y_data_lf = k * x_data_base + b
         plt.plot(x_data_base, y_data_lf.T, c='darkred')
 
+
     def mae_parameter_search(self, x_data_training, y_data_training, base_k, base_b):
+
         # calculate original mae
         y_data_base = base_k * x_data_training[:, 1] + base_b
-        self.model_mae['original'] = mean_absolute_error(y_data_base, y_data_training)
-
-        sc_x = StandardScaler()
-        sc_y = StandardScaler()
 
         # for training: measure to correct
         x_data_fit = np.copy(y_data_training)
         x_data_fit = np.reshape(x_data_fit, (-1, 1))
-        x_data_fit = sc_x.fit_transform(x_data_fit)
+        x_data_fit = self.sc.fit_transform(x_data_fit)
 
         y_data_fit = np.copy(y_data_base)
         y_data_fit = np.reshape(y_data_fit, (-1, 1))
-        y_data_fit = sc_y.fit_transform(y_data_fit)
+        y_data_fit = self.sc.fit_transform(y_data_fit)
         y_data_fit = np.reshape(y_data_fit, (-1))
+
+        self.model_mae['original'] = mean_absolute_error(y_data_base, y_data_training)
+        print('original:'+str(self.model_mae['original']))
 
         # for verifying: measure to predict
         x_data_predict = np.copy(y_data_training)
         x_data_predict = np.reshape(x_data_predict, (-1, 1))
-        x_data_predict = sc_x.fit_transform(x_data_predict)
+        x_data_predict = self.sc.fit_transform(x_data_predict)
 
         c_min = self.step ** -7
         c_max = self.step ** 37
@@ -131,41 +134,57 @@ class Noch3:
         # epsilon_max = self.step ** -22
         print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
 
-        C = c_min
-        while C <= c_max:
+        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-3.csv'
+        k = 0
+        self.min_svr_mae = self.model_mae['original']
+        _c = c_min
+        while _c <= c_max:
             gamma = gamma_min
             while gamma <= gamma_max:
                 epsilon = epsilon_min
                 while epsilon <= epsilon_max:
                     tol = tol_min
                     while tol <= tol_max:
-                        model = SVR(C=C, cache_size=200, degree=3, epsilon=epsilon,
+                        model = SVR(C=_c, cache_size=200, degree=3, epsilon=epsilon,
                                     gamma=gamma, kernel='rbf', max_iter=-1, shrinking=True, tol=tol, verbose=False)
 
                         model.fit(X=x_data_fit, y=y_data_fit)
-
                         y_data_predict = model.predict(x_data_predict)
                         y_data_predict = np.reshape(y_data_predict, (-1, 1))
-                        mae_name = 'SVR_' + str(C) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
 
-                        y_data_predict = sc_y.inverse_transform(y_data_predict)
-
+                        y_data_predict = self.sc.inverse_transform(y_data_predict)
+                        mae_name = 'SVR_' + str(_c) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
                         self.model_mae[mae_name] = mean_absolute_error(y_data_base, y_data_predict)
-
                         self.model_svr_mae = self.model_svr_mae.append(
-                            {'mae_name': mae_name, 'C': C, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
+                            {'mae_name': mae_name, 'C': _c, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
                              'mae': self.model_mae[mae_name]}, ignore_index=True)
-                        if self.model_mae[mae_name] < self.model_mae['original']:
+
+                        if self.model_mae[mae_name] < self.min_svr_mae:
                             self.min_svr_mae = self.model_mae[mae_name]
-                            self.min_svr_c = C
+                            self.min_svr_c = _c
                             self.min_svr_g = gamma
                             self.min_svr_e = epsilon
                             self.min_svr_t = tol
 
+                        if k >= 10000:
+                            self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
+                            k = 0
+                            del self.model_svr_mae
+                            self.model_svr_mae = pd.DataFrame()
+
+                            print(time.asctime(time.localtime(time.time())) + ':' + str(self.min_svr_mae))
+                            print('c=' + str(self.min_svr_c) + ', g=' + str(self.min_svr_g) + ', t=' + str(
+                                self.min_svr_t) + ',e=' + str(self.min_svr_e))
+
+                        k += 1
+
                         tol *= self.step
                     epsilon *= self.step
                 gamma *= self.step
-            C *= self.step
+
+            _c *= self.step
+
+        self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=False)
 
     def process(self):
         data_file_training = '/input/noch2-training.csv'
@@ -178,15 +197,6 @@ class Noch3:
         self.mae_parameter_search(x_data_training, y_data_training, base_k, base_b)
         t2 = time.time()
         print('parameter value spends ' + str((t2 - t1) / 3600) + ' hours')
-        print(self.min_svr_mae)
-        print(self.min_svr_c)
-        print(self.min_svr_g)
-        print(self.min_svr_t)
-        print(self.min_svr_e)
-        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-3.csv'
-        self.model_svr_mae.to_csv(output_file_path, index=True)
-        print(self.model_svr_mae)
-        print(self.model_mae)
 
 
 if __name__ == '__main__':
