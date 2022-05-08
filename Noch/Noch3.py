@@ -10,34 +10,29 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 from scipy.optimize import leastsq
 from sklearn.metrics import r2_score
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.neighbors import KNeighborsRegressor
 
+from sklearn.model_selection import GridSearchCV
 
 class Noch3:
     def __init__(self):
         self.num_training_set = 5
         self.training_set_base_seq = 2
-        self.temperature_base = 30.9
         self.training_set_plot_color = ['red', 'gold', 'green', 'black', 'purple', 'blue']
-        self.set_size = 13
+        self.set_size = 14
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
         self.sc = StandardScaler()
 
         self.models = [
-
-            # SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
-            #     gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
-            # SVR(C=0.005, cache_size=200, degree=3, epsilon=0.00001,
-            #     gamma=0.0001, kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False),
-            SVR(C=11222.741464018818, cache_size=200, degree=3, epsilon=0.001522438840347445,
-                gamma=25.62890624999999, kernel='rbf', max_iter=-1, shrinking=True, tol=5.29310884100836e-09,
+            SVR(C=0.0877914951989026, cache_size=200, degree=3, epsilon=0.08779149519890259,
+                gamma=0.29629629629629617, kernel='rbf', max_iter=-1, shrinking=True, tol=0.1975308641975308,
                 verbose=False),
-            # DecisionTreeRegressor(max_depth=12),
-            # KNeighborsRegressor(n_neighbors=3)
-            # # xgb.XGBRegressor(max_depth=127, learning_rate=0.001, n_estimators=1000,
-            # #                  objective='reg:tweedie', n_jobs=-1, booster='gbtree'),
-            # LinearRegression(),
-            # RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
+            SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
+                gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0000001, verbose=False),
+            DecisionTreeRegressor(max_depth=3),
+            KNeighborsRegressor(n_neighbors=10)
         ]
         self.model_mae = {}
         self.favorit_svr_seq = 0
@@ -67,9 +62,8 @@ class Noch3:
         ret = leastsq(self.err, p0, args=(x_data, y_data))
 
         y_data_lr = ret[0][0] * x_data + ret[0][1]
-        print(r2_score(y_data, y_data_lr))
-
-        print(ret)
+        print('R2:' + str(r2_score(y_data, y_data_lr)))
+        print('k,b=' + str(ret))
         return ret[0]
 
     def calculate_base_kb(self, x_data_training, y_data_training):
@@ -90,113 +84,192 @@ class Noch3:
         y_data_lf = k * x_data_base + b
         plt.plot(x_data_base, y_data_lf.T, c='darkred')
 
+    def training_plot(self, x_data_training, y_data_training):
+        for i in range(self.num_training_set):
+            x_data_training_tmp = x_data_training[i * self.set_size:(i + 1) * self.set_size, 1]
+            y_data_training_tmp = y_data_training[i * self.set_size:(i + 1) * self.set_size]
+            plt.scatter(x_data_training_tmp, y_data_training_tmp,
+                        marker="." if i != self.training_set_base_seq else "x",
+                        c=self.training_set_plot_color[i])
 
-    def mae_parameter_search(self, x_data_training, y_data_training, base_k, base_b):
-
-        # calculate original mae
-        y_data_base = base_k * x_data_training[:, 1] + base_b
+    def fit(self, x_data_training, y_data_training, model_seq, base_k, base_b):
 
         # for training: measure to correct
         x_data_fit = np.copy(y_data_training)
         x_data_fit = np.reshape(x_data_fit, (-1, 1))
         x_data_fit = self.sc.fit_transform(x_data_fit)
 
-        y_data_fit = np.copy(y_data_base)
+        y_data_base_training = base_k * x_data_training[:, 1] + base_b
+        y_data_fit = np.copy(y_data_base_training)
         y_data_fit = np.reshape(y_data_fit, (-1, 1))
         y_data_fit = self.sc.fit_transform(y_data_fit)
         y_data_fit = np.reshape(y_data_fit, (-1))
 
-        self.model_mae['original'] = mean_absolute_error(y_data_base, y_data_training)
-        print('original:'+str(self.model_mae['original']))
+        self.models[model_seq] = self.models[model_seq].fit(X=x_data_fit, y=y_data_fit)
+
+    def fit_plot(self, model_seq, x_data_training, y_data_training, x_data_test, y_data_test, base_k, base_b):
+        # fit
+        self.fit(x_data_training, y_data_training, model_seq, base_k, base_b)
 
         # for verifying: measure to predict
+        y_data_base_test = base_k * x_data_test[:, 1] + base_b
+        x_data_predict = np.copy(y_data_test)
+        x_data_predict = np.reshape(x_data_predict, (-1, 1))
+        x_data_predict = self.sc.fit_transform(x_data_predict)
+
+        y_data_predict = self.models[model_seq].predict(x_data_predict)
+        y_data_predict = np.reshape(y_data_predict, (-1, 1))
+        y_data_predict = self.sc.inverse_transform(y_data_predict)
+
+        model_name = str(model_seq) + '_' + self.models[model_seq].__class__.__name__
+        self.model_mae[model_name] = mean_absolute_error(y_data_base_test, y_data_predict)
+
+        x_data_test_size = len(x_data_test)
+        for i in range(x_data_test_size):
+            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_predict[i], marker='+', color=self.training_set_plot_color[i])
+
+    def mae_parameter_search_on_training(self, x_data_training, y_data_training, x_data_test, y_data_test, base_k,
+                                         base_b):
+
+        # for training: measure to correct
+        x_data_fit = np.copy(y_data_training)
+        x_data_fit = np.reshape(x_data_fit, (-1, 1))
+        x_data_fit = self.sc.fit_transform(x_data_fit)
+
+        y_data_base_training = base_k * x_data_training[:, 1] + base_b
+        y_data_fit = np.copy(y_data_base_training)
+        y_data_fit = np.reshape(y_data_fit, (-1, 1))
+        y_data_fit = self.sc.fit_transform(y_data_fit)
+        y_data_fit = np.reshape(y_data_fit, (-1))
+        self.model_mae['original'] = mean_absolute_error(y_data_base_training, y_data_training)
+
+        # for verifying: measure to predict
+        y_data_base_test = base_k * x_data_training[:, 1] + base_b
         x_data_predict = np.copy(y_data_training)
         x_data_predict = np.reshape(x_data_predict, (-1, 1))
         x_data_predict = self.sc.fit_transform(x_data_predict)
 
-        c_min = self.step ** -7
-        c_max = self.step ** 37
-        # c_max = self.step ** -6
-        print('c:' + str(c_min) + ' - ' + str(c_max))
+        parameters = [{
+            'C': np.logspace(base=self.step, start=-7, stop=37, num=(37 + 7 + 1), endpoint=True),
+            'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 15 + 1), endpoint=True),
+            'tol': np.logspace(base=self.step, start=-42, stop=-4, num=(42 - 4 + 1), endpoint=True),
+            'epsilon': np.logspace(base=self.step, start=-17, stop=0, num=(0 + 17 + 1), endpoint=True)
+        }]
+        print(parameters)
 
-        gamma_min = self.step ** -29
-        gamma_max = self.step ** 8
-        # gamma_max = self.step ** -28
-        print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
+        clf = GridSearchCV(
+            SVR(kernel='rbf', shrinking=True, degree=3, cache_size=200, max_iter=-1),
+            param_grid=parameters,
+            scoring='neg_mean_absolute_error', verbose=0, n_jobs=-1
+        )
 
-        tol_min = self.step ** -43
-        tol_max = self.step ** -4
-        # tol_max = self.step ** -42
-        print('tol:' + str(tol_min) + ' - ' + str(tol_max))
+        clf.fit(X=x_data_predict, y=y_data_base_test)
+        print('clf.best_params_', clf.best_params_)
 
-        epsilon_min = self.step ** -23
-        epsilon_max = self.step ** 0
-        # epsilon_max = self.step ** -22
-        print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
+        # c_min = self.step ** -7
+        # c_max = self.step ** 37
+        # print('c:' + str(c_min) + ' - ' + str(c_max))
+        #
+        # c_log = np.logspace(base=self.step, start=-7, stop=37, num=(37 + 7 + 1), endpoint=True)
+        # print(c_log)
 
-        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-3.csv'
-        k = 0
-        self.min_svr_mae = self.model_mae['original']
-        _c = c_min
-        while _c <= c_max:
-            gamma = gamma_min
-            while gamma <= gamma_max:
-                epsilon = epsilon_min
-                while epsilon <= epsilon_max:
-                    tol = tol_min
-                    while tol <= tol_max:
-                        model = SVR(C=_c, cache_size=200, degree=3, epsilon=epsilon,
-                                    gamma=gamma, kernel='rbf', max_iter=-1, shrinking=True, tol=tol, verbose=False)
+        # gamma_min = self.step ** -29
+        # gamma_max = self.step ** 8
+        # print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
+        #
+        # epsilon_min = self.step ** -23
+        # epsilon_max = self.step ** 0
+        # print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
+        #
+        # tol_min = self.step ** -43
+        # tol_max = self.step ** -4
+        # print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
-                        model.fit(X=x_data_fit, y=y_data_fit)
-                        y_data_predict = model.predict(x_data_predict)
-                        y_data_predict = np.reshape(y_data_predict, (-1, 1))
-
-                        y_data_predict = self.sc.inverse_transform(y_data_predict)
-                        mae_name = 'SVR_' + str(_c) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
-                        self.model_mae[mae_name] = mean_absolute_error(y_data_base, y_data_predict)
-                        self.model_svr_mae = self.model_svr_mae.append(
-                            {'mae_name': mae_name, 'C': _c, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
-                             'mae': self.model_mae[mae_name]}, ignore_index=True)
-
-                        if self.model_mae[mae_name] < self.min_svr_mae:
-                            self.min_svr_mae = self.model_mae[mae_name]
-                            self.min_svr_c = _c
-                            self.min_svr_g = gamma
-                            self.min_svr_e = epsilon
-                            self.min_svr_t = tol
-
-                        if k >= 10000:
-                            self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
-                            k = 0
-                            del self.model_svr_mae
-                            self.model_svr_mae = pd.DataFrame()
-
-                            print(time.asctime(time.localtime(time.time())) + ':' + str(self.min_svr_mae))
-                            print('c=' + str(self.min_svr_c) + ', g=' + str(self.min_svr_g) + ', t=' + str(
-                                self.min_svr_t) + ',e=' + str(self.min_svr_e))
-
-                        k += 1
-
-                        tol *= self.step
-                    epsilon *= self.step
-                gamma *= self.step
-
-            _c *= self.step
-
-        self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=False)
+        # k = 0
+        # output_file_path = self._local_dir + '/output/' + 'svr_arameter_value-4.csv'
+        # self.min_svr_mae = self.model_mae['original']
+        #
+        # C = c_min
+        # while C <= c_max:
+        #     gamma = gamma_min
+        #     while gamma <= gamma_max:
+        #         epsilon = epsilon_min
+        #         while epsilon <= epsilon_max:
+        #             tol = tol_min
+        #             while tol <= tol_max:
+        #                 model = SVR(C=C, cache_size=200, degree=3, epsilon=epsilon,
+        #                             gamma=gamma, kernel='rbf', max_iter=-1, shrinking=True, tol=tol, verbose=False)
+        #                 # fit
+        #                 model.fit(X=x_data_fit, y=y_data_fit)
+        #
+        #                 # predict
+        #                 y_data_predict = model.predict(x_data_predict)
+        #                 y_data_predict = np.reshape(y_data_predict, (-1, 1))
+        #                 y_data_predict = self.sc.inverse_transform(y_data_predict)
+        #
+        #                 mae_name = 'SVR_' + str(C) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
+        #                 self.model_mae[mae_name] = mean_absolute_error(y_data_base_test, y_data_predict)
+        #                 self.model_svr_mae = self.model_svr_mae.append(
+        #                     {'mae_name': mae_name, 'C': C, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
+        #                      'mae': self.model_mae[mae_name]}, ignore_index=True)
+        #
+        #                 if self.model_mae[mae_name] < self.min_svr_mae:
+        #                     self.min_svr_mae = self.model_mae[mae_name]
+        #                     self.min_svr_c = C
+        #                     self.min_svr_g = gamma
+        #                     self.min_svr_e = epsilon
+        #                     self.min_svr_t = tol
+        #
+        #                 if k >= 10000:
+        #                     self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
+        #                     k = 0
+        #                     del self.model_svr_mae
+        #                     self.model_svr_mae = pd.DataFrame()
+        #                     print(time.asctime(time.localtime(time.time())) + ':' + str(self.min_svr_mae))
+        #                     print('c=' + str(self.min_svr_c) + ',g=' + str(self.min_svr_g) + ',e=' + str(
+        #                         self.min_svr_e) + 't=' + str(self.min_svr_t))
+        #
+        #                 k += 1
+        #
+        #                 tol *= self.step
+        #             epsilon *= self.step
+        #         gamma *= self.step
+        #     C *= self.step
 
     def process(self):
         data_file_training = '/input/noch2-training.csv'
         x_data_training, y_data_training = self.load_data(data_file=data_file_training)
+        data_file_test = '/input/noch2-test.csv'
+        x_data_test, y_data_test = self.load_data(data_file=data_file_test)
         base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
+
+        y_data_training_base = base_k * x_data_training[:, 1] + base_b
+        self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training)
+
+        # self.training_plot(x_data_training, y_data_training)
         # self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        # output_file_path = self._local_dir + '/output/training_base.png'
+        # plt.savefig(output_file_path)
         # plt.show()
 
         t1 = time.time()
-        self.mae_parameter_search(x_data_training, y_data_training, base_k, base_b)
+        self.mae_parameter_search_on_training(x_data_training=x_data_training, y_data_training=y_data_training,
+                                              x_data_test=x_data_test, y_data_test=y_data_test, base_k=base_k,
+                                              base_b=base_b)
         t2 = time.time()
-        print('parameter value spends ' + str((t2 - t1) / 3600) + ' hours')
+
+        # for i in range(len(self.models)):
+        #     self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        #     self.fit_plot(model_seq=i, x_data_training=x_data_training, y_data_training=y_data_training,
+        #                   x_data_test=x_data_test, y_data_test=y_data_test,
+        #                   base_k=base_k, base_b=base_b)
+        #
+        #     output_file_path = self._local_dir + '/output/' + str(i) + '_' + self.models[i].__class__.__name__ + '.png'
+        #     plt.savefig(output_file_path)
+        #     plt.show()
+
+        print(self.model_mae)
 
 
 if __name__ == '__main__':
