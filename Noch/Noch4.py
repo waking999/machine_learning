@@ -224,27 +224,27 @@ class Noch4:
         y_data_training_base = base_k * x_data_training[:, 1] + base_b
         self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training)
 
-        self.training_plot(x_data_training, y_data_training)
-        self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-        output_file_path = self._local_dir + '/output/training_base.png'
-        plt.savefig(output_file_path)
-        plt.show()
+        # self.training_plot(x_data_training, y_data_training)
+        # self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        # output_file_path = self._local_dir + '/output/training_base.png'
+        # plt.savefig(output_file_path)
+        # plt.show()
 
-        # t1 = time.time()
-        # self.mae_parameter_search_on_test(x_data_training=x_data_training, y_data_training=y_data_training,
-        #                                   x_data_test=x_data_test, y_data_test=y_data_test, base_k=base_k,
-        #                                   base_b=base_b)
-        # t2 = time.time()
+        t1 = time.time()
+        self.mae_parameter_search_on_test(x_data_training=x_data_training, y_data_training=y_data_training,
+                                          x_data_test=x_data_test, y_data_test=y_data_test, base_k=base_k,
+                                          base_b=base_b)
+        t2 = time.time()
 
-        for i in range(len(self.models)):
-            self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-            self.fit_plot(model_seq=i, x_data_training=x_data_training, y_data_training=y_data_training,
-                          x_data_test=x_data_test, y_data_test=y_data_test,
-                          base_k=base_k, base_b=base_b)
-
-            output_file_path = self._local_dir + '/output/' + str(i) + '_' + self.models[i].__class__.__name__ + '.png'
-            plt.savefig(output_file_path)
-            plt.show()
+        # for i in range(len(self.models)):
+        #     self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        #     self.fit_plot(model_seq=i, x_data_training=x_data_training, y_data_training=y_data_training,
+        #                   x_data_test=x_data_test, y_data_test=y_data_test,
+        #                   base_k=base_k, base_b=base_b)
+        #
+        #     output_file_path = self._local_dir + '/output/' + str(i) + '_' + self.models[i].__class__.__name__ + '.png'
+        #     plt.savefig(output_file_path)
+        #     plt.show()
 
         print(self.model_mae)
 
