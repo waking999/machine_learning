@@ -167,27 +167,27 @@ class Noch5:
         # clf.fit(X=x_data_predict, y=y_data_base_test)
         # print('clf.best_params_', clf.best_params_)
 
-        c_min = self.step ** -7
+        c_min = self.step ** -37
         c_max = self.step ** 7
         print('c:' + str(c_min) + ' - ' + str(c_max))
 
         c_log = np.logspace(base=self.step, start=-7, stop=7, num=(7 + 7 + 1), endpoint=True)
         print(c_log)
 
-        gamma_min = self.step ** -9
+        gamma_min = self.step ** -29
         gamma_max = self.step ** 8
         print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
 
-        epsilon_min = self.step ** -8
+        epsilon_min = self.step ** -28
         epsilon_max = self.step ** 0
         print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
 
-        tol_min = self.step ** -14
+        tol_min = self.step ** -24
         tol_max = self.step ** -4
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
         k = 0
-        output_file_path = self._local_dir + '/output/' + 'svr_arameter_value-4.csv'
+        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-4.csv'
         self.min_svr_mae = self.model_mae['original']
 
         C = c_min
