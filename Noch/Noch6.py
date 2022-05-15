@@ -15,7 +15,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import GridSearchCV
 
 """
-use temp, fm as x, grid search
+use temp, fm as x, grid search, test fit
 """
 
 

@@ -15,11 +15,11 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import GridSearchCV
 
 """
-use temp, fm as x, loop test fit
+use temp, fm as x, loop, training fit
 """
 
 
-class Noch5:
+class Noch7:
     def __init__(self):
         self.num_training_set = 5
         self.training_set_base_seq = 2
@@ -145,8 +145,8 @@ class Noch5:
         # y_data_fit = np.reshape(y_data_fit, (-1, 1))
 
         # for verifying: measure to predict
-        y_data_base_test = base_k * x_data_test + base_b
-        x_data_predict = np.copy(y_data_test)
+        y_data_base_test = base_k * x_data_training + base_b
+        x_data_predict = np.copy(y_data_training)
         x_data_predict[:, 0] = self.reference_temperature
         x_data_predict = np.reshape(x_data_predict, (-1, 2))
 
@@ -262,5 +262,5 @@ class Noch5:
 
 
 if __name__ == '__main__':
-    noch = Noch5()
+    noch = Noch7()
     noch.process()

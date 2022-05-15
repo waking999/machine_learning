@@ -15,11 +15,11 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import GridSearchCV
 
 """
-use temp, fm as x, loop test fit
+use temp, fm as x, grid search training fit
 """
 
 
-class Noch5:
+class Noch8:
     def __init__(self):
         self.num_training_set = 5
         self.training_set_base_seq = 2
@@ -145,96 +145,96 @@ class Noch5:
         # y_data_fit = np.reshape(y_data_fit, (-1, 1))
 
         # for verifying: measure to predict
-        y_data_base_test = base_k * x_data_test + base_b
-        x_data_predict = np.copy(y_data_test)
+        y_data_base_test = base_k * x_data_training + base_b
+        x_data_predict = np.copy(y_data_training)
         x_data_predict[:, 0] = self.reference_temperature
         x_data_predict = np.reshape(x_data_predict, (-1, 2))
 
-        # parameters = [{
-        #     'C': np.logspace(base=self.step, start=-7, stop=37, num=(37 + 7 + 1), endpoint=True),
-        #     'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 15 + 1), endpoint=True),
-        #     'tol': np.logspace(base=self.step, start=-42, stop=-4, num=(42 - 4 + 1), endpoint=True),
-        #     'epsilon': np.logspace(base=self.step, start=-17, stop=0, num=(0 + 17 + 1), endpoint=True)
-        # }]
-        # print(parameters)
+        parameters = [{
+            'C': np.logspace(base=self.step, start=-7, stop=37, num=(37 + 7 + 1), endpoint=True),
+            'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 29 + 1), endpoint=True),
+            'tol': np.logspace(base=self.step, start=-24, stop=-4, num=(-4 + 24 + 1), endpoint=True),
+            'epsilon': np.logspace(base=self.step, start=-28, stop=0, num=(0 + 28 + 1), endpoint=True)
+        }]
+        print(parameters)
 
-        # clf = GridSearchCV(
-        #     SVR(kernel='rbf', shrinking=True, degree=3, cache_size=200, max_iter=-1),
-        #     param_grid=parameters,
-        #     scoring='neg_mean_absolute_error', verbose=0, n_jobs=-1
-        # )
+        clf = GridSearchCV(
+            SVR(kernel='rbf', shrinking=True, degree=3, cache_size=200, max_iter=-1),
+            param_grid=parameters,
+            scoring='neg_mean_absolute_error', verbose=0, n_jobs=-1
+        )
+
+        clf.fit(X=x_data_predict, y=y_data_base_test)
+        print('clf.best_params_', clf.best_params_)
         #
-        # clf.fit(X=x_data_predict, y=y_data_base_test)
-        # print('clf.best_params_', clf.best_params_)
+        # c_min = self.step ** -37
+        # c_max = self.step ** 7
+        # print('c:' + str(c_min) + ' - ' + str(c_max))
+        #
+        # c_log = np.logspace(base=self.step, start=-7, stop=7, num=(7 + 7 + 1), endpoint=True)
+        # print(c_log)
+        #
+        # gamma_min = self.step ** -29
+        # gamma_max = self.step ** 8
+        # print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
+        #
+        # epsilon_min = self.step ** -28
+        # epsilon_max = self.step ** 0
+        # print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
+        #
+        # tol_min = self.step ** -24
+        # tol_max = self.step ** -4
+        # print('tol:' + str(tol_min) + ' - ' + str(tol_max))
+        #
+        # k = 0
+        # output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-4.csv'
+        # self.min_svr_mae = self.model_mae['original']
 
-        c_min = self.step ** -37
-        c_max = self.step ** 7
-        print('c:' + str(c_min) + ' - ' + str(c_max))
-
-        c_log = np.logspace(base=self.step, start=-7, stop=7, num=(7 + 7 + 1), endpoint=True)
-        print(c_log)
-
-        gamma_min = self.step ** -29
-        gamma_max = self.step ** 8
-        print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
-
-        epsilon_min = self.step ** -28
-        epsilon_max = self.step ** 0
-        print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
-
-        tol_min = self.step ** -24
-        tol_max = self.step ** -4
-        print('tol:' + str(tol_min) + ' - ' + str(tol_max))
-
-        k = 0
-        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-4.csv'
-        self.min_svr_mae = self.model_mae['original']
-
-        C = c_min
-        while C <= c_max:
-            gamma = gamma_min
-            while gamma <= gamma_max:
-                epsilon = epsilon_min
-                while epsilon <= epsilon_max:
-                    tol = tol_min
-                    while tol <= tol_max:
-                        model = SVR(C=C, cache_size=200, degree=3, epsilon=epsilon,
-                                    gamma=gamma, kernel='rbf', max_iter=-1, shrinking=True, tol=tol, verbose=False)
-                        # fit
-                        model.fit(X=x_data_fit, y=y_data_fit)
-
-                        # predict
-                        y_data_predict = model.predict(x_data_predict)
-                        y_data_predict = np.reshape(y_data_predict, (-1, 1))
-
-                        mae_name = 'SVR_' + str(C) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
-                        self.model_mae[mae_name] = mean_absolute_error(y_data_base_test, y_data_predict)
-                        self.model_svr_mae = self.model_svr_mae.append(
-                            {'mae_name': mae_name, 'C': C, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
-                             'mae': self.model_mae[mae_name]}, ignore_index=True)
-
-                        if self.model_mae[mae_name] < self.min_svr_mae:
-                            self.min_svr_mae = self.model_mae[mae_name]
-                            self.min_svr_c = C
-                            self.min_svr_g = gamma
-                            self.min_svr_e = epsilon
-                            self.min_svr_t = tol
-
-                        if k >= 10000:
-                            self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
-                            k = 0
-                            del self.model_svr_mae
-                            self.model_svr_mae = pd.DataFrame()
-                            print(time.asctime(time.localtime(time.time())) + ':' + str(self.min_svr_mae))
-                            print('c=' + str(self.min_svr_c) + ',g=' + str(self.min_svr_g) + ',e=' + str(
-                                self.min_svr_e) + 't=' + str(self.min_svr_t))
-
-                        k += 1
-
-                        tol *= self.step
-                    epsilon *= self.step
-                gamma *= self.step
-            C *= self.step
+        # C = c_min
+        # while C <= c_max:
+        #     gamma = gamma_min
+        #     while gamma <= gamma_max:
+        #         epsilon = epsilon_min
+        #         while epsilon <= epsilon_max:
+        #             tol = tol_min
+        #             while tol <= tol_max:
+        #                 model = SVR(C=C, cache_size=200, degree=3, epsilon=epsilon,
+        #                             gamma=gamma, kernel='rbf', max_iter=-1, shrinking=True, tol=tol, verbose=False)
+        #                 # fit
+        #                 model.fit(X=x_data_fit, y=y_data_fit)
+        #
+        #                 # predict
+        #                 y_data_predict = model.predict(x_data_predict)
+        #                 y_data_predict = np.reshape(y_data_predict, (-1, 1))
+        #
+        #                 mae_name = 'SVR_' + str(C) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
+        #                 self.model_mae[mae_name] = mean_absolute_error(y_data_base_test, y_data_predict)
+        #                 self.model_svr_mae = self.model_svr_mae.append(
+        #                     {'mae_name': mae_name, 'C': C, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
+        #                      'mae': self.model_mae[mae_name]}, ignore_index=True)
+        #
+        #                 if self.model_mae[mae_name] < self.min_svr_mae:
+        #                     self.min_svr_mae = self.model_mae[mae_name]
+        #                     self.min_svr_c = C
+        #                     self.min_svr_g = gamma
+        #                     self.min_svr_e = epsilon
+        #                     self.min_svr_t = tol
+        #
+        #                 if k >= 10000:
+        #                     self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
+        #                     k = 0
+        #                     del self.model_svr_mae
+        #                     self.model_svr_mae = pd.DataFrame()
+        #                     print(time.asctime(time.localtime(time.time())) + ':' + str(self.min_svr_mae))
+        #                     print('c=' + str(self.min_svr_c) + ',g=' + str(self.min_svr_g) + ',e=' + str(
+        #                         self.min_svr_e) + 't=' + str(self.min_svr_t))
+        #
+        #                 k += 1
+        #
+        #                 tol *= self.step
+        #             epsilon *= self.step
+        #         gamma *= self.step
+        #     C *= self.step
 
     def process(self):
         data_file_training = '/input/noch2-training.csv'
@@ -252,15 +252,9 @@ class Noch5:
                                               base_b=base_b)
         t2 = time.time()
         print('mae parameter search spends:' + str((t2 - t1) / 3600) + ' hrs')
-        print('parameter value spends ' + str((t2 - t1)) + 's')
-        print(self.min_svr_mae)
-        print(self.min_svr_c)
-        print(self.min_svr_g)
-        print(self.min_svr_t)
-        print(self.min_svr_e)
         # print(self.model_mae)
 
 
 if __name__ == '__main__':
-    noch = Noch5()
+    noch = Noch8()
     noch.process()
