@@ -19,7 +19,7 @@ use temp, fm as x, grid search
 """
 
 
-class Noch5:
+class Noch6:
     def __init__(self):
         self.num_training_set = 5
         self.training_set_base_seq = 2
@@ -256,5 +256,5 @@ class Noch5:
 
 
 if __name__ == '__main__':
-    noch = Noch5()
+    noch = Noch6()
     noch.process()
