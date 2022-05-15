@@ -6,7 +6,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from sklearn.metrics import mean_absolute_error
-from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 from scipy.optimize import leastsq
 from sklearn.metrics import r2_score
@@ -15,7 +14,12 @@ from sklearn.neighbors import KNeighborsRegressor
 
 from sklearn.model_selection import GridSearchCV
 
-class Noch6:
+"""
+use temp, fm as x, grid search
+"""
+
+
+class Noch5:
     def __init__(self):
         self.num_training_set = 5
         self.training_set_base_seq = 2
@@ -23,7 +27,7 @@ class Noch6:
         self.set_size = 14
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
-        self.sc = StandardScaler()
+        self.reference_temperature = 30.9
 
         self.models = [
             SVR(C=0.0877914951989026, cache_size=200, degree=3, epsilon=0.08779149519890259,
@@ -68,69 +72,31 @@ class Noch6:
 
     def calculate_base_kb(self, x_data_training, y_data_training):
         x_data_base = x_data_training[
-                      self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size, 1]
-        y_data_base = y_data_training[
                       self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size]
+        y_data_base = y_data_training[
+                      self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size, 1]
         k, b = self.linear_fitting(x_data_base, y_data_base)
         return k, b, x_data_base
 
     def load_data(self, data_file):
         df = self.load_dataset(self._local_dir + data_file, sep_char=',', header=None)
-        x_data = df.loc[:, 0:1].to_numpy()
-        y_data = df.loc[:, 2].to_numpy()
+        x_data = df.loc[:, 1].to_numpy()
+        y_data = df.loc[:, [0, 2]].to_numpy()
         return x_data, y_data
 
-    # def base_plot(self, k, b, x_data_base):
-    #     y_data_lf = k * x_data_base + b
-    #     plt.plot(x_data_base, y_data_lf.T, c='darkred')
+    def base_plot(self, k, b, x_data_base):
+        y_data_lf = k * x_data_base + b
+        plt.plot(x_data_base, y_data_lf.T, c='darkred')
 
-    # def training_plot(self, x_data_training, y_data_training):
-    #     for i in range(self.num_training_set):
-    #         x_data_training_tmp = x_data_training[i * self.set_size:(i + 1) * self.set_size, 1]
-    #         y_data_training_tmp = y_data_training[i * self.set_size:(i + 1) * self.set_size]
-    #         plt.scatter(x_data_training_tmp, y_data_training_tmp,
-    #                     marker="." if i != self.training_set_base_seq else "x",
-    #                     c=self.training_set_plot_color[i])
-    #
-    # def fit(self, x_data_training, y_data_training, model_seq, base_k, base_b):
-    #
-    #     # for training: measure to correct
-    #     x_data_fit = np.copy(y_data_training)
-    #     x_data_fit = np.reshape(x_data_fit, (-1, 1))
-    #     x_data_fit = self.sc.fit_transform(x_data_fit)
-    #
-    #     y_data_base_training = base_k * x_data_training[:, 1] + base_b
-    #     y_data_fit = np.copy(y_data_base_training)
-    #     y_data_fit = np.reshape(y_data_fit, (-1, 1))
-    #     # y_data_fit = self.sc.fit_transform(y_data_fit)
-    #     y_data_fit = np.reshape(y_data_fit, (-1))
-    #
-    #     self.models[model_seq] = self.models[model_seq].fit(X=x_data_fit, y=y_data_fit)
-    #
-    # def fit_plot(self, model_seq, x_data_training, y_data_training, x_data_test, y_data_test, base_k, base_b):
-    #     # fit
-    #     self.fit(x_data_training, y_data_training, model_seq, base_k, base_b)
-    #
-    #     # for verifying: measure to predict
-    #     y_data_base_test = base_k * x_data_test[:, 1] + base_b
-    #     x_data_predict = np.copy(y_data_test)
-    #     x_data_predict = np.reshape(x_data_predict, (-1, 1))
-    #     x_data_predict = self.sc.fit_transform(x_data_predict)
-    #
-    #     y_data_predict = self.models[model_seq].predict(x_data_predict)
-    #     y_data_predict = np.reshape(y_data_predict, (-1, 1))
-    #     y_data_predict = self.sc.inverse_transform(y_data_predict)
-    #
-    #     model_name = str(model_seq) + '_' + self.models[model_seq].__class__.__name__
-    #     self.model_mae[model_name] = mean_absolute_error(y_data_base_test, y_data_predict)
-    #
-    #     x_data_test_size = len(x_data_test)
-    #     for i in range(x_data_test_size):
-    #         plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
-    #         plt.scatter(x_data_test[i, 1], y_data_predict[i], marker='+', color=self.training_set_plot_color[i])
+    def training_plot(self, x_data_training, y_data_training):
+        for i in range(self.num_training_set):
+            x_data_training_tmp = x_data_training[i * self.set_size:(i + 1) * self.set_size, 1]
+            y_data_training_tmp = y_data_training[i * self.set_size:(i + 1) * self.set_size]
+            plt.scatter(x_data_training_tmp, y_data_training_tmp,
+                        marker="." if i != self.training_set_base_seq else "x",
+                        c=self.training_set_plot_color[i])
 
-    def mae_parameter_search_on_training(self, x_data_training, y_data_training, x_data_test, y_data_test, base_k,
-                                         base_b):
+    def fit(self, x_data_training, y_data_training, model_seq, base_k, base_b):
 
         # for training: measure to correct
         x_data_fit = np.copy(y_data_training)
@@ -140,21 +106,55 @@ class Noch6:
         y_data_base_training = base_k * x_data_training[:, 1] + base_b
         y_data_fit = np.copy(y_data_base_training)
         y_data_fit = np.reshape(y_data_fit, (-1, 1))
-        # y_data_fit = self.sc.fit_transform(y_data_fit)
+        y_data_fit = self.sc.fit_transform(y_data_fit)
+        y_data_fit = np.reshape(y_data_fit, (-1))
 
-        self.model_mae['original'] = mean_absolute_error(y_data_base_training, y_data_training)
+        self.models[model_seq] = self.models[model_seq].fit(X=x_data_fit, y=y_data_fit)
+
+    def fit_plot(self, model_seq, x_data_training, y_data_training, x_data_test, y_data_test, base_k, base_b):
+        # fit
+        self.fit(x_data_training, y_data_training, model_seq, base_k, base_b)
 
         # for verifying: measure to predict
-        y_data_base_test = base_k * x_data_training[:, 1] + base_b
-        x_data_predict = np.copy(y_data_training)
+        y_data_base_test = base_k * x_data_test[:, 1] + base_b
+        x_data_predict = np.copy(y_data_test)
         x_data_predict = np.reshape(x_data_predict, (-1, 1))
         x_data_predict = self.sc.fit_transform(x_data_predict)
 
+        y_data_predict = self.models[model_seq].predict(x_data_predict)
+        y_data_predict = np.reshape(y_data_predict, (-1, 1))
+        y_data_predict = self.sc.inverse_transform(y_data_predict)
+
+        model_name = str(model_seq) + '_' + self.models[model_seq].__class__.__name__
+        self.model_mae[model_name] = mean_absolute_error(y_data_base_test, y_data_predict)
+
+        x_data_test_size = len(x_data_test)
+        for i in range(x_data_test_size):
+            plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
+            plt.scatter(x_data_test[i, 1], y_data_predict[i], marker='+', color=self.training_set_plot_color[i])
+
+    def mae_parameter_search_on_training(self, x_data_training, y_data_training, x_data_test, y_data_test, base_k,
+                                         base_b):
+
+        # for training: measure to correct
+        x_data_fit = np.copy(y_data_training)
+        x_data_fit = np.reshape(x_data_fit, (-1, 2))
+
+        y_data_base_training = base_k * x_data_training + base_b
+        y_data_fit = np.copy(y_data_base_training)
+        # y_data_fit = np.reshape(y_data_fit, (-1, 1))
+
+        # for verifying: measure to predict
+        y_data_base_test = base_k * x_data_training + base_b
+        x_data_predict = np.copy(y_data_training)
+        x_data_predict[:, 0] = self.reference_temperature
+        x_data_predict = np.reshape(x_data_predict, (-1, 2))
+
         parameters = [{
             'C': np.logspace(base=self.step, start=-7, stop=37, num=(37 + 7 + 1), endpoint=True),
-            'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 15 + 1), endpoint=True),
-            'tol': np.logspace(base=self.step, start=-42, stop=-4, num=(42 - 4 + 1), endpoint=True),
-            'epsilon': np.logspace(base=self.step, start=-17, stop=0, num=(0 + 17 + 1), endpoint=True)
+            'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 29 + 1), endpoint=True),
+            'tol': np.logspace(base=self.step, start=-24, stop=-4, num=(-4 + 24 + 1), endpoint=True),
+            'epsilon': np.logspace(base=self.step, start=-28, stop=0, num=(0 + 28 + 1), endpoint=True)
         }]
         print(parameters)
 
@@ -166,30 +166,30 @@ class Noch6:
 
         clf.fit(X=x_data_predict, y=y_data_base_test)
         print('clf.best_params_', clf.best_params_)
-
-        # c_min = self.step ** -7
-        # c_max = self.step ** 37
+        #
+        # c_min = self.step ** -37
+        # c_max = self.step ** 7
         # print('c:' + str(c_min) + ' - ' + str(c_max))
         #
-        # c_log = np.logspace(base=self.step, start=-7, stop=37, num=(37 + 7 + 1), endpoint=True)
+        # c_log = np.logspace(base=self.step, start=-7, stop=7, num=(7 + 7 + 1), endpoint=True)
         # print(c_log)
-
+        #
         # gamma_min = self.step ** -29
         # gamma_max = self.step ** 8
         # print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
         #
-        # epsilon_min = self.step ** -23
+        # epsilon_min = self.step ** -28
         # epsilon_max = self.step ** 0
         # print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
         #
-        # tol_min = self.step ** -43
+        # tol_min = self.step ** -24
         # tol_max = self.step ** -4
         # print('tol:' + str(tol_min) + ' - ' + str(tol_max))
-
-        # k = 0
-        # output_file_path = self._local_dir + '/output/' + 'svr_arameter_value-4.csv'
-        # self.min_svr_mae = self.model_mae['original']
         #
+        # k = 0
+        # output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-4.csv'
+        # self.min_svr_mae = self.model_mae['original']
+
         # C = c_min
         # while C <= c_max:
         #     gamma = gamma_min
@@ -206,7 +206,6 @@ class Noch6:
         #                 # predict
         #                 y_data_predict = model.predict(x_data_predict)
         #                 y_data_predict = np.reshape(y_data_predict, (-1, 1))
-        #                 y_data_predict = self.sc.inverse_transform(y_data_predict)
         #
         #                 mae_name = 'SVR_' + str(C) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
         #                 self.model_mae[mae_name] = mean_absolute_error(y_data_base_test, y_data_predict)
@@ -243,22 +242,19 @@ class Noch6:
         data_file_test = '/input/noch2-test.csv'
         x_data_test, y_data_test = self.load_data(data_file=data_file_test)
         base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
-        y_data_training_base = base_k * x_data_training[:, 1] + base_b
-        self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training)
 
-
+        y_data_training_base = base_k * x_data_training[:] + base_b
+        self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training[:, 1])
 
         t1 = time.time()
         self.mae_parameter_search_on_training(x_data_training=x_data_training, y_data_training=y_data_training,
                                               x_data_test=x_data_test, y_data_test=y_data_test, base_k=base_k,
                                               base_b=base_b)
         t2 = time.time()
-
-
-
-        print(self.model_mae)
+        print('mae parameter search spends:' + str((t2 - t1) / 3600) + ' hrs')
+        # print(self.model_mae)
 
 
 if __name__ == '__main__':
-    noch = Noch6()
+    noch = Noch5()
     noch.process()
