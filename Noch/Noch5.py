@@ -252,7 +252,7 @@ class Noch5:
                                               base_b=base_b)
         t2 = time.time()
         print('mae parameter search spends:' + str((t2 - t1) / 3600) + ' hrs')
-        print(self.model_mae)
+        # print(self.model_mae)
 
 
 if __name__ == '__main__':
