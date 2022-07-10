@@ -216,13 +216,15 @@ class Noch1:
         y_data_model_temp = model.predict(x_data_test)
 
         y_data_base = base_k * x_data_test + base_b
-        self.model_mae[model.__class__.__name__ + str(model_seq)] = mean_absolute_error(y_data_base[:, 1],
+        model_name=model.__class__.__name__ + str(model_seq)
+        self.model_mae[model_name] = mean_absolute_error(y_data_base[:, 1],
                                                                                         y_data_model_temp)
 
         x_data_test_size = len(x_data_test)
+        print(model_name)
         for i in range(x_data_test_size):
             plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
-            # print(str(x_data_test[i, 1])+','+str(y_data_model_temp[i]))
+            print(str(x_data_test[i, 1])+','+str(y_data_model_temp[i]))
             plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.training_set_plot_color[i])
 
         # print('************')
