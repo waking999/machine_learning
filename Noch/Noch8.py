@@ -223,11 +223,14 @@ class Noch8:
                         if k >= 10000:
                             self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
                             k = 0
+                            round += 1
                             del self.model_svr_mae
                             self.model_svr_mae = pd.DataFrame()
-                            print(time.asctime(time.localtime(time.time())) + ':' + str(self.min_svr_mae))
+
+                            print(str(round) + ':' + time.asctime(time.localtime(time.time())) + ':' + str(
+                                self.min_svr_mae))
                             print('c=' + str(self.min_svr_c) + ',g=' + str(self.min_svr_g) + ',e=' + str(
-                                self.min_svr_e) + 't=' + str(self.min_svr_t))
+                                self.min_svr_e) + ',t=' + str(self.min_svr_t))
 
                         k += 1
 
