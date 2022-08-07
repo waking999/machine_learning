@@ -217,16 +217,14 @@ class Noch1:
 
         y_data_base = base_k * x_data_test + base_b
         model_name=model.__class__.__name__ + str(model_seq)
-        self.model_mae[model_name] = mean_absolute_error(y_data_base[:, 1],
-                                                                                        y_data_model_temp)
+        self.model_mae[model_name] = mean_absolute_error(y_data_base[:, 1],  y_data_model_temp)
 
         x_data_test_size = len(x_data_test)
         print(model_name)
         for i in range(x_data_test_size):
             plt.scatter(x_data_test[i, 1], y_data_test[i], marker='.', color=self.training_set_plot_color[i])
-            print(str(x_data_test[i, 1])+','+str(y_data_model_temp[i]))
             plt.scatter(x_data_test[i, 1], y_data_model_temp[i], marker='+', color=self.training_set_plot_color[i])
-
+            print(str(x_data_test[i, 1]) + ',' + str(y_data_model_temp[i]))
         # print('************')
 
     def test_lf_plot(self, test_data_file, x_data_training, y_data_training, base_k, base_b):

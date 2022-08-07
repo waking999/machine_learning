@@ -30,8 +30,9 @@ class Noch9:
         self.reference_temperature = 30.9
 
         self.models = [
-            SVR(C=0.0877914951989026, cache_size=200, degree=3, epsilon=0.08779149519890259,
-                gamma=0.29629629629629617, kernel='rbf', max_iter=-1, shrinking=True, tol=0.1975308641975308,
+
+            SVR(C=194.61950683593700, cache_size=200, degree=3, epsilon=2.03484885385874e-07,
+                gamma=0.011561019943888400, kernel='rbf', max_iter=-1, shrinking=True, tol=0.000451092989732576,
                 verbose=False),
             SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
                 gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0000001, verbose=False),
@@ -129,7 +130,29 @@ class Noch9:
         for i in range(x_data_test_size):
             plt.scatter(x_data_test[i], y_data_test[i, 1], marker='.', color=self.training_set_plot_color[i])
             plt.scatter(x_data_test[i], y_data_predict[i], marker='+', color=self.training_set_plot_color[i])
-            print(str(x_data_test[i])+','+str(y_data_predict[i,0]))
+            print(str(x_data_test[i]) + ',' + str(y_data_predict[i, 0]))
+
+    def mae_verification_on_training(self,x_data_training, y_data_training,base_k,base_b):
+        model=self.models[self.favorit_svr_seq]
+        x_data_fit = np.copy(y_data_training)
+        x_data_fit = np.reshape(x_data_fit, (-1, 2))
+        y_data_base_training = base_k * x_data_training + base_b
+        y_data_fit = np.copy(y_data_base_training)
+
+        # fit
+        model.fit(X=x_data_fit, y=y_data_fit)
+
+        x_data_predict = np.copy(y_data_training)
+        x_data_predict[:, 0] = self.reference_temperature
+        x_data_predict = np.reshape(x_data_predict, (-1, 2))
+        # predict
+        y_data_predict = model.predict(x_data_predict)
+        y_data_predict = np.reshape(y_data_predict, (-1, 1))
+
+        y_data_base_test = base_k * x_data_training + base_b
+        whole_mae = mean_absolute_error(y_data_base_test, y_data_predict)
+        print('whole_mae={}'.format(whole_mae))
+
 
     def mae_parameter_search_on_training(self, x_data_training, y_data_training, x_data_test, y_data_test, base_k,
                                          base_b):
@@ -262,16 +285,20 @@ class Noch9:
 
         for i in range(len(self.models)):
             self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-            print('algorithm:'+str(i))
+            print('algorithm:' + str(i))
             self.fit_plot(model_seq=i, x_data_training=x_data_training,
-                                  y_data_training=y_data_training, x_data_test=x_data_test,
-                                  y_data_test=y_data_test, base_k=base_k, base_b=base_b)
+                          y_data_training=y_data_training, x_data_test=x_data_test,
+                          y_data_test=y_data_test, base_k=base_k, base_b=base_b)
 
             output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + str(i) + '.png'
             plt.savefig(output_file_path)
             plt.show()
 
         print(self.model_mae)
+
+        self.mae_verification_on_training(x_data_training=x_data_training,
+                          y_data_training=y_data_training,  base_k=base_k, base_b=base_b)
+
 
 if __name__ == '__main__':
     noch = Noch9()
