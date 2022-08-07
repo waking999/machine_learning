@@ -187,6 +187,7 @@ class Noch8:
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
         k = 0
+        round = 0
         output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-6.csv'
         self.min_svr_mae = self.model_mae['original']
 
