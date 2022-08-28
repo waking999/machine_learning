@@ -30,13 +30,33 @@ class Noch9:
         self.reference_temperature = 30.9
 
         self.models = [
-
-            SVR(C=194.61950683593700, cache_size=200, degree=3, epsilon=2.03484885385874e-07,
-                gamma=0.011561019943888400, kernel='rbf', max_iter=-1, shrinking=True, tol=0.000451092989732576,
+            # SVR(C=194.61950683593700, cache_size=200, degree=3, epsilon=2.03484885385874e-07,
+            #     gamma=0.011561019943888400, kernel='rbf', max_iter=-1, shrinking=True, tol=0.000451092989732576,
+            #     verbose=False),
+            # SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
+            #     gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0000001, verbose=False),
+            SVR(C=17.085937499999993, cache_size=200, degree=3, epsilon=0.00020048577321447834,
+                gamma=0.6666666666666664, kernel='rbf', max_iter=-1, shrinking=True, tol=0.002283658260521167,
                 verbose=False),
-            SVR(C=50, cache_size=200, degree=3, epsilon=0.1,
-                gamma=2.5, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0000001, verbose=False),
+            DecisionTreeRegressor(max_depth=1),
+            DecisionTreeRegressor(max_depth=2),
             DecisionTreeRegressor(max_depth=3),
+            DecisionTreeRegressor(max_depth=4),
+            DecisionTreeRegressor(max_depth=5),
+            DecisionTreeRegressor(max_depth=6),
+            DecisionTreeRegressor(max_depth=7),
+            DecisionTreeRegressor(max_depth=8),
+            DecisionTreeRegressor(max_depth=9),
+            DecisionTreeRegressor(max_depth=10),
+            KNeighborsRegressor(n_neighbors=1),
+            KNeighborsRegressor(n_neighbors=2),
+            KNeighborsRegressor(n_neighbors=3),
+            KNeighborsRegressor(n_neighbors=4),
+            KNeighborsRegressor(n_neighbors=5),
+            KNeighborsRegressor(n_neighbors=6),
+            KNeighborsRegressor(n_neighbors=7),
+            KNeighborsRegressor(n_neighbors=8),
+            KNeighborsRegressor(n_neighbors=9),
             KNeighborsRegressor(n_neighbors=10)
         ]
         self.model_mae = {}
@@ -132,8 +152,8 @@ class Noch9:
             plt.scatter(x_data_test[i], y_data_predict[i], marker='+', color=self.training_set_plot_color[i])
             print(str(x_data_test[i]) + ',' + str(y_data_predict[i, 0]))
 
-    def mae_verification_on_training(self,x_data_training, y_data_training,base_k,base_b):
-        model=self.models[self.favorit_svr_seq]
+    def mae_verification_on_training(self, x_data_training, y_data_training, base_k, base_b, model_seq):
+        model = self.models[model_seq]
         x_data_fit = np.copy(y_data_training)
         x_data_fit = np.reshape(x_data_fit, (-1, 2))
         y_data_base_training = base_k * x_data_training + base_b
@@ -151,8 +171,7 @@ class Noch9:
 
         y_data_base_test = base_k * x_data_training + base_b
         whole_mae = mean_absolute_error(y_data_base_test, y_data_predict)
-        print('whole_mae={}'.format(whole_mae))
-
+        print('Model {}: whole_mae={}'.format(model_seq, whole_mae))
 
     def mae_parameter_search_on_training(self, x_data_training, y_data_training, x_data_test, y_data_test, base_k,
                                          base_b):
@@ -294,10 +313,12 @@ class Noch9:
             plt.savefig(output_file_path)
             plt.show()
 
+            self.mae_verification_on_training(x_data_training=x_data_training,
+                                              y_data_training=y_data_training, base_k=base_k, base_b=base_b,model_seq=i)
+
         print(self.model_mae)
 
-        self.mae_verification_on_training(x_data_training=x_data_training,
-                          y_data_training=y_data_training,  base_k=base_k, base_b=base_b)
+
 
 
 if __name__ == '__main__':
