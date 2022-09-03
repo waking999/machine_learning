@@ -262,9 +262,9 @@ class Notch10b:
             C *= self.step
 
     def process(self):
-        data_file_training = 'input/notch10b-training.csv'
+        data_file_training = '/input/notch10b-training.csv'
         x_data_training, y_data_training = self.load_data(data_file=data_file_training)
-        data_file_test = 'input/notch10b-test.csv'
+        data_file_test = '/input/notch10b-test.csv'
         x_data_test, y_data_test = self.load_data(data_file=data_file_test)
         base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
 
@@ -303,5 +303,5 @@ class Notch10b:
 
 
 if __name__ == '__main__':
-    noch = Notch10b()
-    noch.process()
+    notch = Notch10b()
+    notch.process()
