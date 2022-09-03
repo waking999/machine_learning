@@ -283,7 +283,7 @@ class Notch10:
         print(self.min_svr_g)
         print(self.min_svr_t)
         print(self.min_svr_e)
-        print(self.model_mae)
+        # print(self.model_mae)
 
         # for i in range(len(self.models)):
         #     self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
