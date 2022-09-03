@@ -15,11 +15,11 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import GridSearchCV
 
 """
-use fm1, fm2 as x, search svr parameter value
+use fm1, fm2 as x, search svr parameter value, not-parallel
 """
 
 
-class Notch10:
+class Notch10a:
     def __init__(self):
         self.num_training_set = 5
         self.training_set_base_seq = 2
@@ -206,7 +206,7 @@ class Notch10:
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
         k = 0
-        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-10b.csv'
+        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-10a.csv'
         self.min_svr_mae = self.model_mae['original']
 
         C = c_min
@@ -262,9 +262,9 @@ class Notch10:
             C *= self.step
 
     def process(self):
-        data_file_training = '/input/notch3-training.csv'
+        data_file_training = 'input/notch10a-training.csv'
         x_data_training, y_data_training = self.load_data(data_file=data_file_training)
-        data_file_test = '/input/notch3-test.csv'
+        data_file_test = 'input/notch10a-test.csv'
         x_data_test, y_data_test = self.load_data(data_file=data_file_test)
         base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
 
@@ -303,5 +303,5 @@ class Notch10:
 
 
 if __name__ == '__main__':
-    noch = Notch10()
+    noch = Notch10a()
     noch.process()
