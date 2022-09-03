@@ -72,7 +72,7 @@ class Notch10b:
         x_data_base = x_data_training[
                       self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size]
         y_data_base = y_data_training[
-                      self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size, 1]
+                      self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size, 0]
         k, b = self.linear_fitting(x_data_base, y_data_base)
         return k, b, x_data_base
 
@@ -86,13 +86,13 @@ class Notch10b:
         y_data_lf = k * x_data_base + b
         plt.plot(x_data_base, y_data_lf.T, c='darkred')
 
-    def training_plot(self, x_data_training, y_data_training):
-        for i in range(self.num_training_set):
-            x_data_training_tmp = x_data_training[i * self.set_size:(i + 1) * self.set_size, 1]
-            y_data_training_tmp = y_data_training[i * self.set_size:(i + 1) * self.set_size]
-            plt.scatter(x_data_training_tmp, y_data_training_tmp,
-                        marker="." if i != self.training_set_base_seq else "x",
-                        c=self.training_set_plot_color[i])
+    # def training_plot(self, x_data_training, y_data_training):
+    #     for i in range(self.num_training_set):
+    #         x_data_training_tmp = x_data_training[i * self.set_size:(i + 1) * self.set_size, 1]
+    #         y_data_training_tmp = y_data_training[i * self.set_size:(i + 1) * self.set_size]
+    #         plt.scatter(x_data_training_tmp, y_data_training_tmp,
+    #                     marker="." if i != self.training_set_base_seq else "x",
+    #                     c=self.training_set_plot_color[i])
 
     def fit(self, x_data_training, y_data_training, model_seq, base_k, base_b):
 
@@ -269,7 +269,7 @@ class Notch10b:
         base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
 
         y_data_training_base = base_k * x_data_training[:] + base_b
-        self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training[:, 1])
+        self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training[:, 0])
 
         t1 = time.time()
         self.mae_parameter_search_on_training(x_data_training=x_data_training, y_data_training=y_data_training,
