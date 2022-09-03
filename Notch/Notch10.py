@@ -187,22 +187,22 @@ class Notch10:
         # print('clf.best_params_', clf.best_params_)
 
         c_min = self.step ** -47
-        c_max = self.step ** 17
+        c_max = self.step ** 27
         print('c:' + str(c_min) + ' - ' + str(c_max))
 
         # c_log = np.logspace(base=self.step, start=-7, stop=7, num=(7 + 7 + 1), endpoint=True)
         # print(c_log)
 
         gamma_min = self.step ** -39
-        gamma_max = self.step ** 18
+        gamma_max = self.step ** 28
         print('gamma:' + str(gamma_min) + ' - ' + str(gamma_max))
 
         epsilon_min = self.step ** -38
-        epsilon_max = self.step ** 10
+        epsilon_max = self.step ** 20
         print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
 
         tol_min = self.step ** -34
-        tol_max = self.step ** 6
+        tol_max = self.step ** 16
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
         k = 0
