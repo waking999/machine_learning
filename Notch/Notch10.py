@@ -206,7 +206,7 @@ class Notch10:
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
         k = 0
-        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-10.csv'
+        output_file_path = self._local_dir + '/output/' + 'svr_parameter_value-10b.csv'
         self.min_svr_mae = self.model_mae['original']
 
         C = c_min
@@ -228,9 +228,9 @@ class Notch10:
 
                         mae_name = 'SVR_' + str(C) + '_' + str(gamma) + '_' + str(epsilon) + '_' + str(tol)
                         self.model_mae[mae_name] = mean_absolute_error(y_data_base_test, y_data_predict)
-                        self.model_svr_mae = self.model_svr_mae.append(
-                            {'mae_name': mae_name, 'C': C, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
-                             'mae': self.model_mae[mae_name]}, ignore_index=True)
+                        # self.model_svr_mae = self.model_svr_mae.append(
+                        #     {'mae_name': mae_name, 'C': C, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
+                        #      'mae': self.model_mae[mae_name]}, ignore_index=True)
 
                         if self.model_mae[mae_name] < self.min_svr_mae:
                             self.min_svr_mae = self.model_mae[mae_name]
@@ -238,12 +238,18 @@ class Notch10:
                             self.min_svr_g = gamma
                             self.min_svr_e = epsilon
                             self.min_svr_t = tol
+                            self.model_svr_mae = self.model_svr_mae.append(
+                                {'mae_name': mae_name, 'C': C, 'gamma': gamma, 'eps': epsilon, 'tol': tol,
+                                 'mae': self.model_mae[mae_name]}, ignore_index=True)
 
                         if k >= 10000:
-                            self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
+                            if self.model_svr_mae is not None:
+                                self.model_svr_mae.to_csv(output_file_path, index=True, mode='a', header=True)
+                                del self.model_svr_mae
+                                self.model_svr_mae = pd.DataFrame()
+
                             k = 0
-                            del self.model_svr_mae
-                            self.model_svr_mae = pd.DataFrame()
+
                             print(time.asctime(time.localtime(time.time())) + ':' + str(self.min_svr_mae))
                             print('c=' + str(self.min_svr_c) + ',g=' + str(self.min_svr_g) + ',e=' + str(
                                 self.min_svr_e) + ',t=' + str(self.min_svr_t))
