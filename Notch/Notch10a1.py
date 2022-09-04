@@ -259,46 +259,46 @@ class Notch10a:
     #                 epsilon *= self.step
     #             gamma *= self.step
     #         C *= self.step
-    #
-    # def process(self):
-    #     data_file_training = '/input/notch10a-training.csv'
-    #     x_data_training, y_data_training = self.load_data(data_file=data_file_training)
-    #     data_file_test = '/input/notch10a-test.csv'
-    #     x_data_test, y_data_test = self.load_data(data_file=data_file_test)
-    #     base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
-    #
-    #     y_data_training_base = base_k * x_data_training[:] + base_b
-    #     self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training[:, 0])
-    #
-    #     t1 = time.time()
-    #     self.mae_parameter_search_on_training(x_data_training=x_data_training, y_data_training=y_data_training,
-    #                                           x_data_test=x_data_test, y_data_test=y_data_test, base_k=base_k,
-    #                                           base_b=base_b)
-    #     t2 = time.time()
-    #     print('mae parameter search spends:' + str((t2 - t1) / 3600) + ' hrs')
-    #     print('parameter value spends ' + str((t2 - t1)) + 's')
-    #     print(self.min_svr_mae)
-    #     print(self.min_svr_c)
-    #     print(self.min_svr_g)
-    #     print(self.min_svr_t)
-    #     print(self.min_svr_e)
-    # print(self.model_mae)
 
-    # for i in range(len(self.models)):
-    #     self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
-    #     print('algorithm:' + str(i))
-    #     self.fit_plot(model_seq=i, x_data_training=x_data_training,
-    #                   y_data_training=y_data_training, x_data_test=x_data_test,
-    #                   y_data_test=y_data_test, base_k=base_k, base_b=base_b)
-    #
-    #     output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + str(i) + '.png'
-    #     plt.savefig(output_file_path)
-    #     plt.show()
-    #
-    #     self.mae_verification_on_training(x_data_training=x_data_training,
-    #                                       y_data_training=y_data_training, base_k=base_k, base_b=base_b,model_seq=i)
-    #
-    # print(self.model_mae)
+    def process(self):
+        data_file_training = '/input/notch10a-training.csv'
+        x_data_training, y_data_training = self.load_data(data_file=data_file_training)
+        data_file_test = '/input/notch10a-test.csv'
+        x_data_test, y_data_test = self.load_data(data_file=data_file_test)
+        base_k, base_b, x_data_base = self.calculate_base_kb(x_data_training, y_data_training)
+
+        y_data_training_base = base_k * x_data_training[:] + base_b
+        self.model_mae['original'] = mean_absolute_error(y_data_training_base, y_data_training[:, 0])
+
+        t1 = time.time()
+        self.mae_parameter_search_on_training(x_data_training=x_data_training, y_data_training=y_data_training,
+                                              x_data_test=x_data_test, y_data_test=y_data_test, base_k=base_k,
+                                              base_b=base_b)
+        t2 = time.time()
+        print('mae parameter search spends:' + str((t2 - t1) / 3600) + ' hrs')
+        print('parameter value spends ' + str((t2 - t1)) + 's')
+        # print(self.min_svr_mae)
+        # print(self.min_svr_c)
+        # print(self.min_svr_g)
+        # print(self.min_svr_t)
+        # print(self.min_svr_e)
+        # print(self.model_mae)
+
+        # for i in range(len(self.models)):
+        #     self.base_plot(k=base_k, b=base_b, x_data_base=x_data_base)
+        #     print('algorithm:' + str(i))
+        #     self.fit_plot(model_seq=i, x_data_training=x_data_training,
+        #                   y_data_training=y_data_training, x_data_test=x_data_test,
+        #                   y_data_test=y_data_test, base_k=base_k, base_b=base_b)
+        #
+        #     output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + str(i) + '.png'
+        #     plt.savefig(output_file_path)
+        #     plt.show()
+        #
+        #     self.mae_verification_on_training(x_data_training=x_data_training,
+        #                                       y_data_training=y_data_training, base_k=base_k, base_b=base_b,model_seq=i)
+        #
+        # print(self.model_mae)
 
 
 if __name__ == '__main__':
