@@ -15,7 +15,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import GridSearchCV
 
 """
-use fm1, fm2 as x, search svr parameter value, not-parallel, seek parameter values
+use fm1, fm2 as x, search svr parameter value, not-parallel, seek parameter values, gridsearch
 """
 
 
