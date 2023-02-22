@@ -15,7 +15,7 @@ from sklearn.svm import SVR
 class NotchSVRParameter:
     def __init__(self):
         self.min_svr_e = None
-        self.num_training_set = 7
+        self.num_training_set = 11
         self.set_size = 9
         self.training_set_base_seq = self.num_training_set // 2  # the data set is ordered by temperature ascending, we take the middle one
         self._local_dir = _local_dir = os.path.dirname(__file__)
@@ -43,7 +43,7 @@ class NotchSVRParameter:
     def mae_svr_parameter_search_on_training_loop(self, x_data_training, y_data_training):
 
         c_min = self.step ** -10
-        c_max = self.step ** 30
+        c_max = self.step ** 37
         print('c:' + str(c_min) + ' - ' + str(c_max))
 
         gamma_min = self.step ** -29
@@ -52,11 +52,11 @@ class NotchSVRParameter:
 
 
         tol_min = self.step ** -42
-        tol_max = self.step ** 4
+        tol_max = self.step ** -4
         print('tol:' + str(tol_min) + ' - ' + str(tol_max))
 
         epsilon_min = self.step ** -17
-        epsilon_max = self.step ** -0
+        epsilon_max = self.step ** 0
         print('epsilon:' + str(epsilon_min) + ' - ' + str(epsilon_max))
 
         k = 0
@@ -114,8 +114,8 @@ class NotchSVRParameter:
 
     def mae_svr_parameter_search_on_training_grid(self, x_data_training, y_data_training):
         parameters = [{
-            'C': np.logspace(base=self.step, start=-10, stop=30, num=(37 + 7 + 1), endpoint=True),
-            'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 15 + 1), endpoint=True),
+            'C': np.logspace(base=self.step, start=-10, stop=37, num=(37 + 10 + 1), endpoint=True),
+            'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 29 + 1), endpoint=True),
             'tol': np.logspace(base=self.step, start=-42, stop=-4, num=(-4 + 42 + 1), endpoint=True),
             'epsilon': np.logspace(base=self.step, start=-17, stop=0, num=(0 + 17 + 1), endpoint=True)
         }]
@@ -130,7 +130,7 @@ class NotchSVRParameter:
 
         clf.fit(X=x_data_training, y=y_data_training)
 
-        with open('input/svr_parameter_value_grid.csv', 'w') as f:
+        with open('./input/svr_parameter_value_grid.csv', 'w') as f:
             w = csv.DictWriter(f, clf.best_params_.keys())
             w.writeheader()
             w.writerow(clf.best_params_)
@@ -138,16 +138,16 @@ class NotchSVRParameter:
         print('clf.best_params_', clf.best_params_)
 
     def process(self):
-        data_file_training = 'input/notch-training-afterlf.csv'
+        data_file_training = './input/notch-training-afterlf.csv'
         x_data_training, y_data_training = self.load_data(data_file=data_file_training)
         self.model_mae['original'] = mean_absolute_error(y_data_training, x_data_training[:, 0])
-
-        # search parameter by loop
-        t1 = time.time()
-        self.mae_svr_parameter_search_on_training_loop(x_data_training=x_data_training, y_data_training=y_data_training)
-        t2 = time.time()
-
-        print('mae parameter search (loop) spends:' + str((t2 - t1)) + 's')
+        #
+        # # search parameter by loop
+        # t1 = time.time()
+        # self.mae_svr_parameter_search_on_training_loop(x_data_training=x_data_training, y_data_training=y_data_training)
+        # t2 = time.time()
+        #
+        # print('mae parameter search (loop) spends:' + str((t2 - t1)) + 's')
 
 
         # search parameter by grid search

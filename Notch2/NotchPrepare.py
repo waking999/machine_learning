@@ -61,7 +61,7 @@ class NotchPrepare:
         # save training with expectation
         y_data_training_base = lf_k * x_data_training[:] + lf_b
         df_training[4] = y_data_training_base
-        df_training.to_csv("./output/notch-training-afterlf.csv", index=False, header=False)
+        df_training.to_csv("./input/notch-training-afterlf.csv", index=False, header=False)
 
         # save validation with expectation
         data_file_validation = './input/notch-validation.csv'
@@ -70,12 +70,12 @@ class NotchPrepare:
         df_validation[4] = data_tag_validation
         df_validation.to_csv("./input/notch-validation-afterlf.csv", index=False, header=False)
 
-        # save test with expectation
-        data_file_test = './input/notch-test.csv'
-        x_data_test, y_data_test, df_test = self.load_data(data_file=data_file_test)
-        y_data_test_base = lf_k * x_data_test[:] + lf_b
-        df_test[4] = y_data_test_base
-        df_test.to_csv("./input/notch-test-afterlf.csv", index=False, header=False)
+        # # save test with expectation
+        # data_file_test = './input/notch-test.csv'
+        # x_data_test, y_data_test, df_test = self.load_data(data_file=data_file_test)
+        # y_data_test_base = lf_k * x_data_test[:] + lf_b
+        # df_test[4] = y_data_test_base
+        # df_test.to_csv("./input/notch-test-afterlf.csv", index=False, header=False)
         # save k,b
         kb_df = pd.DataFrame()
         kb_df["k"] = [lf_k]

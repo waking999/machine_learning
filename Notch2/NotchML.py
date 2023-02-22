@@ -15,22 +15,23 @@ class NotchML:
     def __init__(self):
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
-        self.num_training_set = 7
+        self.num_training_set = 11
         self.set_size = 9
         self.training_set_base_seq = self.num_training_set // 2  # the data set is ordered by temperature ascending, we take the middle one
 
         self.model_mae = {}
 
         # https://matplotlib.org/stable/gallery/color/named_colors.html
-        self.training_set_plot_color = ['red', 'sienna', 'gold', 'green', 'black', 'purple', 'blue']
+        self.training_set_plot_color = ['red', 'sienna', 'darkorange', 'gold', 'yellow', 'green', 'turquoise',
+                                        'cadetblue', 'black', 'purple', 'blue']
 
         self.models = [
-            SVR(C=985.2612533569333, cache_size=200, degree=3, epsilon=0.0010149592268982965,
-                gamma=0.44444444444444425, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0022836582605211667,
+            SVR(C=37876.75244106351, cache_size=200, degree=3, epsilon=0.0010149592268982965,
+                gamma=0.9999999999999996, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0022836582605211667,
                 verbose=False),
-            SVR(C=19.08374928032402, cache_size=200, degree=3, epsilon=0.05852766346593507,
-                gamma=2.8834204418832886e-05, kernel='rbf', max_iter=-1, shrinking=True, tol=0.19753086419753085,
-                verbose=False),
+            # SVR(C=19.08374928032402, cache_size=200, degree=3, epsilon=0.05852766346593507,
+            #     gamma=2.8834204418832886e-05, kernel='rbf', max_iter=-1, shrinking=True, tol=0.19753086419753085,
+            #     verbose=False),
             DecisionTreeRegressor(max_depth=3),
             KNeighborsRegressor(n_neighbors=10)
         ]
@@ -45,11 +46,12 @@ class NotchML:
 
         x_data_plot = df.loc[:, 1].to_numpy()
         y_data_plot = df.loc[:, 2].to_numpy()
+        y_data_plot2 = df.loc[:, 3].to_numpy()
 
         data_fit = df.loc[:, [2, 3]].to_numpy()
         data_tag = df.loc[:, 4].to_numpy()
 
-        return x_data_plot, y_data_plot, data_fit, data_tag
+        return x_data_plot, y_data_plot, y_data_plot2, data_fit, data_tag
 
     @staticmethod
     def base_plot(x_data_base, y_data_base):
@@ -98,7 +100,7 @@ class NotchML:
 
     def process(self):
         data_file_training = './input/notch-training-afterlf.csv'
-        x_data_plot_training, y_data_plot_training, data_fit_training, data_tag_training = self.load_data(
+        x_data_plot_training, y_data_plot_training, y_data_plot_training2, data_fit_training, data_tag_training = self.load_data(
             data_file=data_file_training)
         self.model_mae['original'] = mean_absolute_error(data_tag_training, data_fit_training[:, 0])
         x_data_base = x_data_plot_training[
@@ -107,11 +109,12 @@ class NotchML:
                       self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size]
 
         data_file_validation = './input/notch-validation-afterlf.csv'
-        x_data_plot_validation, y_data_plot_validation, data_fit_validation, data_tag_validation = self.load_data(
+        x_data_plot_validation, y_data_plot_validation, y_data_plot_validation2, data_fit_validation, data_tag_validation = self.load_data(
             data_file=data_file_validation)
 
         # pic 1: all temperature and base line
         self.training_plot(x_data_plot_training, y_data_plot_training)
+        self.training_plot(x_data_plot_training, y_data_plot_training2)
         self.base_plot(x_data_base, y_data_base)
         plt.show()
 
@@ -128,7 +131,7 @@ class NotchML:
             plt.show()
 
         data_file_test = './input/notch-test-afterlf.csv'
-        x_data_plot_test, y_data_plot_test, data_fit_test, data_tag_test = self.load_data(
+        x_data_plot_test, y_data_plot_test, y_data_plot_test2, data_fit_test, data_tag_test = self.load_data(
             data_file=data_file_test)
 
         # performance algorithm:
