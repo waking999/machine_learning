@@ -12,7 +12,7 @@ class NotchPrepare:
     def __init__(self):
         self._local_dir = _local_dir = os.path.dirname(__file__)
 
-        self.num_training_set = 7
+        self.num_training_set = 11
         self.set_size = 9
         self.training_set_base_seq = self.num_training_set // 2
 
@@ -63,13 +63,13 @@ class NotchPrepare:
         df_training[4] = y_data_training_base
         df_training.to_csv("./input/notch-training-afterlf.csv", index=False, header=False)
 
-        # save validation with expectation
-        data_file_validation = './input/notch-validation.csv'
-        x_data_validation, y_data_validation, df_validation = self.load_data(data_file=data_file_validation)
-        data_tag_validation = lf_k * x_data_validation[:] + lf_b
-        df_validation[4] = data_tag_validation
-        df_validation.to_csv("./input/notch-validation-afterlf.csv", index=False, header=False)
-
+        # # save validation with expectation
+        # data_file_validation = './input/notch-validation.csv'
+        # x_data_validation, y_data_validation, df_validation = self.load_data(data_file=data_file_validation)
+        # data_tag_validation = lf_k * x_data_validation[:] + lf_b
+        # df_validation[4] = data_tag_validation
+        # df_validation.to_csv("./input/notch-validation-afterlf.csv", index=False, header=False)
+        #
         # # save test with expectation
         # data_file_test = './input/notch-test.csv'
         # x_data_test, y_data_test, df_test = self.load_data(data_file=data_file_test)
