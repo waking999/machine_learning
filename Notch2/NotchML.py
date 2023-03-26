@@ -26,14 +26,11 @@ class NotchML:
                                         'cadetblue', 'black', 'purple', 'blue']
 
         self.models = [
-            SVR(C=37876.75244106351, cache_size=200, degree=3, epsilon=0.0010149592268982965,
-                gamma=0.9999999999999996, kernel='rbf', max_iter=-1, shrinking=True, tol=0.0022836582605211667,
+            SVR(C=129.74633789062494, cache_size=200, degree=3, epsilon=0.0010149592268982965,
+                gamma=11.390624999999996, kernel='rbf', max_iter=-1, shrinking=True, tol=4.019454526140724e-08,
                 verbose=False),
-            # SVR(C=19.08374928032402, cache_size=200, degree=3, epsilon=0.05852766346593507,
-            #     gamma=2.8834204418832886e-05, kernel='rbf', max_iter=-1, shrinking=True, tol=0.19753086419753085,
-            #     verbose=False),
-            DecisionTreeRegressor(max_depth=3),
-            KNeighborsRegressor(n_neighbors=10)
+            # DecisionTreeRegressor(max_depth=3),
+            # KNeighborsRegressor(n_neighbors=10)
         ]
 
     @staticmethod
@@ -65,29 +62,19 @@ class NotchML:
                         marker="." if i != self.training_set_base_seq else "x",
                         c=self.training_set_plot_color[i])
 
-    def fit_on_test(self, model_seq, data_fit_training, data_tag_training, x_data_plot_test, y_data_plot_test,
-                    data_fit_test, data_tag_test):
+    def fit(self, model_seq, data_fit_training, data_tag_training):
         # fit
         self.models[model_seq] = self.models[model_seq].fit(X=data_fit_training, y=data_tag_training)
 
-        # test predict
-        data_predict_test = self.models[model_seq].predict(data_fit_test)
-        data_predict_test = np.reshape(data_predict_test, (-1, 1))
-
-        model_name = str(model_seq) + '_' + self.models[model_seq].__class__.__name__
-        self.model_mae[model_name] = mean_absolute_error(data_tag_test, data_predict_test)
-
-    def fit_plot(self, model_seq, data_fit_training, data_tag_training, x_data_plot_validation, y_data_plot_validation,
-                 data_fit_validation, data_tag_validation):
-        # fit
-        self.models[model_seq] = self.models[model_seq].fit(X=data_fit_training, y=data_tag_training)
+    def plot(self, model_seq, data_fit_training, data_tag_training, x_data_plot_validation, y_data_plot_validation,
+             data_fit_validation, data_tag_validation):
 
         # validation predict
         data_predict_validation = self.models[model_seq].predict(data_fit_validation)
         data_predict_validation = np.reshape(data_predict_validation, (-1, 1))
 
-        model_name = str(model_seq) + '_' + self.models[model_seq].__class__.__name__
-        # self.model_mae[model_name] = mean_absolute_error(data_tag_validation, data_predict_validation)
+        model_name = str(model_seq) + '_' + self.models[model_seq].__class__.__name__ + '_validate'
+        self.model_mae[model_name] = mean_absolute_error(data_tag_validation, data_predict_validation)
 
         x_data_plot_validation_size = len(x_data_plot_validation)
         print(model_name)
@@ -98,50 +85,63 @@ class NotchML:
                         color=self.training_set_plot_color[i])
             # print(str(x_data_plot_validation[i]) + ',' + str(data_predict_validation[i]))
 
+    def validation_plot(self, x_data_base, y_data_base, model_seq, data_file_validation, validation_seq):
+        self.base_plot(x_data_base, y_data_base)
+
+        x_data_plot_validation, y_data_plot_validation, y_data_plot_validation_a, data_validation, data_tag_validation = self.load_data(
+            data_file=data_file_validation)
+
+        # validation set
+        data_validation_predict = self.models[model_seq].predict(data_validation)
+        data_validation_predict = np.reshape(data_validation_predict, (-1, 1))
+        model_name = str(model_seq) + '_' + self.models[model_seq].__class__.__name__ + '_' + validation_seq
+        self.model_mae[model_name] = mean_absolute_error(data_tag_validation, data_validation_predict)
+        x_data_plot_validation_size = len(x_data_plot_validation)
+        print(model_name)
+        for j in range(x_data_plot_validation_size):
+            plt.scatter(x_data_plot_validation[j], y_data_plot_validation[j], marker='.',
+                        color=self.training_set_plot_color[j])
+            plt.scatter(x_data_plot_validation[j], data_validation_predict[j], marker='+',
+                        color=self.training_set_plot_color[j])
+        output_file_path = self._local_dir + '/output/' + self.models[model_seq].__class__.__name__ + str(
+            model_seq) + '_' + validation_seq + '.png'
+        plt.savefig(output_file_path)
+        plt.show()
+
     def process(self):
         data_file_training = './input/notch-training-afterlf.csv'
         x_data_plot_training, y_data_plot_training, y_data_plot_training2, data_fit_training, data_tag_training = self.load_data(
             data_file=data_file_training)
+
         self.model_mae['original'] = mean_absolute_error(data_tag_training, data_fit_training[:, 0])
         x_data_base = x_data_plot_training[
                       self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size]
         y_data_base = data_tag_training[
                       self.training_set_base_seq * self.set_size:(self.training_set_base_seq + 1) * self.set_size]
 
-        data_file_validation = './input/notch-validation-afterlf.csv'
-        x_data_plot_validation, y_data_plot_validation, y_data_plot_validation2, data_fit_validation, data_tag_validation = self.load_data(
-            data_file=data_file_validation)
-
         # pic 1: all temperature and base line
         self.training_plot(x_data_plot_training, y_data_plot_training)
-        self.training_plot(x_data_plot_training, y_data_plot_training2)
         self.base_plot(x_data_base, y_data_base)
+        output_file_path = self._local_dir + '/output/' + 'base.png'
+        plt.savefig(output_file_path)
+        plt.show()
+
+        self.training_plot(x_data_plot_training, y_data_plot_training2)
         plt.show()
 
         # pic algorithm:
         for i in range(len(self.models)):
-            self.base_plot(x_data_base, y_data_base)
-            print('algorithm:' + str(i))
-            self.fit_plot(model_seq=i, data_fit_training=data_fit_training, data_tag_training=data_tag_training,
-                          x_data_plot_validation=x_data_plot_validation, y_data_plot_validation=y_data_plot_validation,
-                          data_fit_validation=data_fit_validation, data_tag_validation=data_tag_validation)
+            # print('algorithm:' + str(i))
+            self.fit(model_seq=i, data_fit_training=data_fit_training, data_tag_training=data_tag_training)
 
-            output_file_path = self._local_dir + '/output/' + self.models[i].__class__.__name__ + str(i) + '.png'
-            plt.savefig(output_file_path)
-            plt.show()
+            data_file_validation1 = '/input/notch-plot-validation1.csv'
+            self.validation_plot(x_data_base, y_data_base, i, data_file_validation1, '1')
 
-        data_file_test = './input/notch-test-afterlf.csv'
-        x_data_plot_test, y_data_plot_test, y_data_plot_test2, data_fit_test, data_tag_test = self.load_data(
-            data_file=data_file_test)
+            data_file_validation2 = '/input/notch-plot-validation2.csv'
+            self.validation_plot(x_data_base, y_data_base, i, data_file_validation2, '2')
 
-        # performance algorithm:
-        for i in range(len(self.models)):
-            self.base_plot(x_data_base, y_data_base)
-            print('algorithm:' + str(i))
-            self.fit_on_test(model_seq=i, data_fit_training=data_fit_training, data_tag_training=data_tag_training,
-                             x_data_plot_test=x_data_plot_test,
-                             y_data_plot_test=y_data_plot_test,
-                             data_fit_test=data_fit_test, data_tag_test=data_tag_test)
+            data_file_validation3 = '/input/notch-plot-validation3.csv'
+            self.validation_plot(x_data_base, y_data_base, i, data_file_validation3, '3')
 
         # show performance of each algorithm
         print(self.model_mae)

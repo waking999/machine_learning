@@ -15,7 +15,7 @@ from sklearn.svm import SVR
 class NotchSVRParameter:
     def __init__(self):
         self.min_svr_e = None
-        self.num_training_set = 11
+        self.num_training_set = 9
         self.set_size = 9
         self.training_set_base_seq = self.num_training_set // 2  # the data set is ordered by temperature ascending, we take the middle one
         self._local_dir = _local_dir = os.path.dirname(__file__)
@@ -114,9 +114,9 @@ class NotchSVRParameter:
 
     def mae_svr_parameter_search_on_training_grid(self, x_data_training, y_data_training):
         parameters = [{
-            'C': np.logspace(base=self.step, start=-10, stop=37, num=(37 + 10 + 1), endpoint=True),
-            'gamma': np.logspace(base=self.step, start=-29, stop=8, num=(8 + 29 + 1), endpoint=True),
-            'tol': np.logspace(base=self.step, start=-42, stop=-4, num=(-4 + 42 + 1), endpoint=True),
+            'C': np.logspace(base=self.step, start=-10, stop=27, num=(27 + 10 + 1), endpoint=True),
+            'gamma': np.logspace(base=self.step, start=-19, stop=8, num=(8 + 19 + 1), endpoint=True),
+            'tol': np.logspace(base=self.step, start=-32, stop=-4, num=(-4 + 32 + 1), endpoint=True),
             'epsilon': np.logspace(base=self.step, start=-17, stop=0, num=(0 + 17 + 1), endpoint=True)
         }]
         #print(parameters)
@@ -141,21 +141,21 @@ class NotchSVRParameter:
         data_file_training = './input/notch-training-afterlf.csv'
         x_data_training, y_data_training = self.load_data(data_file=data_file_training)
         self.model_mae['original'] = mean_absolute_error(y_data_training, x_data_training[:, 0])
-        #
-        # # search parameter by loop
-        # t1 = time.time()
-        # self.mae_svr_parameter_search_on_training_loop(x_data_training=x_data_training, y_data_training=y_data_training)
-        # t2 = time.time()
-        #
-        # print('mae parameter search (loop) spends:' + str((t2 - t1)) + 's')
 
-
-        # search parameter by grid search
+        # search parameter by loop
         t1 = time.time()
-        self.mae_svr_parameter_search_on_training_grid(x_data_training=x_data_training, y_data_training=y_data_training)
+        self.mae_svr_parameter_search_on_training_loop(x_data_training=x_data_training, y_data_training=y_data_training)
         t2 = time.time()
 
-        print('mae parameter search (grid search) spends:' + str((t2 - t1)) + 's')
+        print('mae parameter search (loop) spends:' + str((t2 - t1)) + 's')
+
+
+        # # search parameter by grid search
+        # t1 = time.time()
+        # self.mae_svr_parameter_search_on_training_grid(x_data_training=x_data_training, y_data_training=y_data_training)
+        # t2 = time.time()
+        #
+        # print('mae parameter search (grid search) spends:' + str((t2 - t1)) + 's')
 
         print('end')
 
